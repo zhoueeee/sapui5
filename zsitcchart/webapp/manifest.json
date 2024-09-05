@@ -1,0 +1,137 @@
+{
+    "_version": "1.49.0",
+    "sap.app": {
+        "id": "zdemowithpar",
+        "type": "application",
+        "i18n": "i18n/i18n.properties",
+        "applicationVersion": {
+            "version": "0.0.1"
+        },
+        "title": "{{appTitle}}",
+        "description": "{{appDescription}}",
+        "resources": "resources.json",
+        "sourceTemplate": {
+            "id": "@sap/generator-fiori:basic",
+            "version": "1.8.6",
+            "toolsId": "abed72dc-e10a-4b95-acf5-67fdc24596b7"
+        },
+        "dataSources": {
+            "ZSB_ZJYEW_001_Annotation": {
+                "uri": "/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZSB_ZJYEW_001_VAN',Version='0001')/$value/",
+                "type": "ODataAnnotation",
+                "settings": {
+                    "localUri": "localService/ZSB_ZJYEW_001_Annotation.xml"
+                }
+            },
+            "ZSB_ZJYEW_001": {
+                "uri": "/sap/opu/odata/sap/ZSB_ZJYEW_001",
+                "type": "OData",
+                "settings": {
+                    "annotations": [
+                        "ZSB_ZJYEW_001_Annotation"
+                    ],
+                    "localUri": "localService/metadata.xml",
+                    "odataVersion": "2.0"
+                }
+            }
+        }
+    },
+    "sap.ui": {
+        "technology": "UI5",
+        "icons": {
+            "icon": "",
+            "favIcon": "",
+            "phone": "",
+            "phone@2": "",
+            "tablet": "",
+            "tablet@2": ""
+        },
+        "deviceTypes": {
+            "desktop": true,
+            "tablet": true,
+            "phone": true
+        }
+    },
+    "sap.ui5": {
+        "flexEnabled": true,
+        "dependencies": {
+            "minUI5Version": "1.120.0",
+            "libs": {
+                "sap.m": {},
+                "sap.ui.core": {},
+                "sap.f": {},
+                "sap.suite.ui.generic.template": {},
+                "sap.ui.comp": {},
+                "sap.ui.generic.app": {},
+                "sap.ui.table": {},
+                "sap.ushell": {}
+            }
+        },
+        "contentDensities": {
+            "compact": true,
+            "cozy": true
+        },
+        "models": {
+            "i18n": {
+                "type": "sap.ui.model.resource.ResourceModel",
+                "settings": {
+                    "bundleName": "zdemowithpar.i18n.i18n"
+                }
+            },
+            "": {
+                "preload": true,
+                "dataSource": "ZSB_ZJYEW_001",
+                "settings": {
+                    "defaultBindingMode": "TwoWay",
+                    "defaultCountMode": "Inline",
+                    "refreshAfterChange": false,
+                    "metadataUrlParams": {
+                        "sap-value-list": "none"
+                    }
+                }
+            }
+        },
+        "resources": {
+            "css": [
+                {
+                    "uri": "css/style.css"
+                }
+            ]
+        },
+        "routing": {
+            "config": {
+                "routerClass": "sap.m.routing.Router",
+                "viewType": "XML",
+                "async": true,
+                "viewPath": "zdemowithpar.view",
+                "controlAggregation": "pages",
+                "controlId": "app",
+                "clearControlAggregation": false
+            },
+            "routes": [
+                {
+                    "name": "RouteView",
+                    "pattern": ":?query:",
+                    "target": [
+                        "TargetView"
+                    ]
+                }
+            ],
+            "targets": {
+                "TargetView": {
+                    "viewType": "XML",
+                    "transition": "slide",
+                    "clearControlAggregation": false,
+                    "viewId": "View",
+                    "viewName": "View"
+                }
+            }
+        },
+        "rootView": {
+            "viewName": "zdemowithpar.view.App",
+            "type": "XML",
+            "async": true,
+            "id": "App"
+        }
+    }
+}
