@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+    <title>Custom control renderer</title>
+ 
+    <script id="sap-ui-bootstrap"
+        src="https://sapui5.hana.ondemand.com/resources/sap-ui-core.js"
+        data-sap-ui-theme="sap_bluecrystal"
+        data-sap-ui-libs="sap.m,sap.viz"></script>
+
+ 
+    <script> 
+
+var FIORI_PERCENTAGE_FORMAT_2 = "__UI5__PercentageMaxFraction2";
+  var chartFormatter = sap.viz.ui5.format.ChartFormatter.getInstance();
+ // 注册自定义格式器，百分比格式
+chartFormatter.registerCustomFormatter(FIORI_PERCENTAGE_FORMAT_2, function(value) {
+                  var percentage = sap.ui.core.format.NumberFormat.getPercentInstance({style: 'precent',
+                      maxFractionDigits: 2});
+                  return percentage.format(value);
+              });
+               //必需要的不然轴的标签会不显示
+              sap.viz.api.env.Format.numericFormatter(chartFormatter);
+
+		var businessData =   
+{
+	"data": [{
+		"currency": "USD",
+		"YTD": 2779,
+		"YOY": 2501,
+		"YTDP": 0.4027,
+		"YOYP": 0.4327
+	}, {
+		"currency": "RMB",
+		"YTD": 1389,
+		"YOY": 1250,
+		"YTDP": 0.2313,
+		"YOYP": 0.2013
+	}, {
+		"currency": "KRW",
+		"YTD": 1378,
+		"YOY": 1240,
+		"YTDP": 0.3997,
+		"YOYP": 0.1997
+	}, {
+		"currency": "VND",
+		"YTD": 905,
+		"YOY": 814,
+		"YTDP": 0.2311,
+		"YOYP": 0.1311
+	}, {
+		"currency": "IDR",
+		"YTD": 800,
+		"YOY": 720,
+		"YTDP": 0.2159,
+		"YOYP": 0.1159
+	}, {
+		"currency": "PHP",
+		"YTD": 640,
+		"YOY": 576,
+		"YTDP": 0.427,
+		"YOYP": 0.927
+	}, {
+		"currency": "MYR",
+		"YTD": 578,
+		"YOY": 518,
+		"YTDP": 0.635,
+		"YOYP": 0.835
+	}, {
+		"currency": "TWD",
+		"YTD": 538,
+		"YOY": 475,
+		"YTDP": 0.513,
+		"YOYP": 0.313
+	}]
+}
+		
+		
+		 var oModel = new sap.ui.model.json.JSONModel({
+		       
+		    });
+		 oModel.setData(businessData)
+		 
+		    var oDataset = new sap.viz.ui5.data.FlattenedDataset({data:{path: '/data'},dimensions:
+[{name: 'currency', value: '{currency}'}],measures:[{name: 'YTD', value: '{YTD}'},{name: 'YOY', value: '{YOY}'}
+,{name: 'YTDP', value: '{YTDP}',unit:"%"}
+,{name: 'YOYP', value: '{YOYP}',unit:"%"}]});
+
+		    var oVizFrame = new sap.viz.ui5.controls.VizFrame("vizFrame", {
+		 
+		        'vizType' : 'info/dual_combination',
+			uiConfig:{applicationSet:'fiori'}   //影响POPOVER调用customDataControl功能
+		    });
+
+		    oVizFrame.setDataset(oDataset);
+		    oVizFrame.setModel(oModel);
+
+oVizFrame .setVizProperties({
+	interaction: {
+		syncValueAxis: false
+	},
+	scales:{
+		valueAxis:{
+			max:100,
+			min:0
+		}
+	},
+	plotArea: {
+		dataLabel: {
+			
+			visible: false
+		},
+		dataShape:{
+			primaryAxis:["bar", "bar","line"],
+			secondaryAxis:["line","line"]
+		},
+                               //自动会让双YY轴自动对齐，所以不要人为设置第二轴
+		/* secondaryScale:{
+			minValue:0,
+			maxValue:1,
+			fixedRange: true
+		},  */
+		window: {
+			//start: 'firstDataPoint',
+			//end: 'lastDataPoint'
+		}
+	},
+	title: {
+		visible: false
+	},
+	valueAxis: {
+		label: {
+			 
+		},
+		title: {
+			visible: false
+		},
+		axisLine:{ visible:true },
+		axisTick:{ visible:true },
+		visible: true
+	},
+	valueAxis2: {
+		label: {
+		formatString: FIORI_PERCENTAGE_FORMAT_2
+		},
+		title: {
+			visible: false
+		},
+		axisLine:{ visible:true },
+		axisTick:{ visible:true },
+		visible: true
+	}
+});
+
+		    var feedValueAxis = new sap.viz.ui5.controls.common.feeds.FeedItem({
+		        uid : "valueAxis",
+		        type : "Measure",
+		        values : 
+		            ["YTD","YOY"]
+ 
+		    }),  feedValueAxis2 = new sap.viz.ui5.controls.common.feeds.FeedItem({
+		        uid : "valueAxis2",
+		        type : "Measure",
+		        values : 
+		            ["YTDP","YOYP"]
+ 
+		    }),
+		   categoryAxis = new sap.viz.ui5.controls.common.feeds.FeedItem({
+		        uid : "categoryAxis",
+		        type : "Dimension",
+		        values : ["currency"]
+		    });
+ 
+
+		    oVizFrame.addFeed(feedValueAxis); 
+		    oVizFrame.addFeed(feedValueAxis2);
+		    oVizFrame.addFeed(categoryAxis);
+ 
+		   var oPopOver = new sap.viz.ui5.controls.Popover({
+	customDataControl:  function(data){
+		return new sap.m.Text({
+            text: 'Custom Information: '
+        });
+                                                               }	
+                                                           });
+                                  oPopOver.connect(oVizFrame.getVizUid()); 
+		    oVizFrame.placeAt('content');
+ 
+        
+    </script>
+ 
+</head>
+ 
+<body class="sapUiBody">
+    <div id="content"></div>
+</body>
+</html>
