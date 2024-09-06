@@ -25,7 +25,7 @@ chartFormatter.registerCustomFormatter(FIORI_PERCENTAGE_FORMAT_2, function(value
               sap.viz.api.env.Format.numericFormatter(chartFormatter);
 
 		var businessData =   
-{
+{result:[{
 	"data": [{
 		"currency": "USD",
 		"YTD": 2779,
@@ -74,7 +74,7 @@ chartFormatter.registerCustomFormatter(FIORI_PERCENTAGE_FORMAT_2, function(value
 		"YOY": 475,
 		"YTDP": 0.513,
 		"YOYP": 0.313
-	}]
+	}]}]
 }
 		
 		
@@ -83,7 +83,7 @@ chartFormatter.registerCustomFormatter(FIORI_PERCENTAGE_FORMAT_2, function(value
 		    });
 		 oModel.setData(businessData)
 		 
-		    var oDataset = new sap.viz.ui5.data.FlattenedDataset({data:{path: '/data'},dimensions:
+		    var oDataset = new sap.viz.ui5.data.FlattenedDataset({data:{path: '/result/0/data'},dimensions:
 [{name: 'currency', value: '{currency}'}],measures:[{name: 'YTD', value: '{YTD}'},{name: 'YOY', value: '{YOY}'}
 ,{name: 'YTDP', value: '{YTDP}',unit:"%"}
 ,{name: 'YOYP', value: '{YOYP}',unit:"%"}]});

@@ -1,0 +1,114 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta http-equiv='Content-Type' content='text/html;charset=UTF-8'/>
+		
+		<title>Mobile App in 23 Seconds Example</title>
+		
+		<script src='https://sapui5.hana.ondemand.com/resources/sap-ui-core.js' 
+			id="sap-ui-bootstrap"
+			data-sap-ui-libs="sap.m, sap.viz" 
+			data-sap-ui-theme="sap_bluecrystal"></script>
+			<!-- only load the mobile lib "sap.m" and the Blue Crystal theme -->
+		
+		
+		<script type="text/javascript">
+		var oVizFrame = new sap.viz.ui5.controls.VizFrame({
+			height : "700px",
+			width : "1000px",
+			vizType : "info/dual_combination"
+		});
+		var cData = [];
+		for (var i = 0; i < 10; ++i) {
+			cData.push({
+				"Country": "Country" + i,
+				 "Profit": Math.round(Math.random() * 1000000),
+				 "Forcast": Math.random() * 100000,
+				 "Revenue0": Math.random() * 100000,
+				 "Revenue1": Math.random() * 100000,
+				 "Revenue2": Math.random() * 100000,
+				 "Revenue3": Math.random() * 100000,
+				 "Revenue4": Math.random() * 100000				
+			});
+		}
+			
+		var oModel = new sap.ui.model.json.JSONModel(cData);
+		var oDataset = new sap.viz.ui5.data.FlattenedDataset({
+		 	dimensions: [{
+				axis: 1,
+		 		name: 'Country',
+		 		value: "{Country}"
+			}],
+		 	measures: [
+		 		{name: 'Profit', value: '{Profit}'},
+		 		{name: "Forcast", value : "{Forcast}"},
+				{name: "Revenue0", value: "{Revenue0}"},
+				{name: "Revenue1", value: "{Revenue1}"},
+				{name: "Revenue2", value: "{Revenue2}"},
+				{name: "Revenue3", value: "{Revenue3}"},
+				{name: "Revenue4", value: "{Revenue4}"}				
+		 	],
+		 	data: {
+		 		path: "/"
+		 	}
+		 });
+
+		oVizFrame.setVizProperties({
+			plotArea:{
+				dataShape:{
+					primaryAxis: ["line","bar","bar","line"],
+					secondaryAxis: ["line","bar","bar"]
+				}
+			}
+		});
+		oVizFrame.setDataset(oDataset);
+		oVizFrame.setModel(oModel);
+
+		var feedPrimaryValues = new sap.viz.ui5.controls.common.feeds.FeedItem({
+			'uid' : "valueAxis",
+			'type' : "Measure",
+			'values' : ["Profit", "Revenue0", "Revenue1", "Revenue2"]
+		}),feedSecondaryValues = new sap.viz.ui5.controls.common.feeds.FeedItem({
+			'uid' : "valueAxis2",
+			'type' : "Measure",
+			'values' : ["Forcast", "Revenue3", "Revenue4"]
+		}), feedAxisLabels = new sap.viz.ui5.controls.common.feeds.FeedItem({
+			'uid' : "categoryAxis",
+			'type' : "Dimension",
+			'values' : ["Country"]
+		});
+		
+				
+		oVizFrame.addFeed(feedPrimaryValues);
+		oVizFrame.addFeed(feedAxisLabels);
+		oVizFrame.addFeed(feedSecondaryValues);
+		oVizFrame.placeAt("content");
+			
+			var mButton = new sap.m.Button({
+				text: "update dataset",
+				press: function(){
+					var aData = [];
+					for (var i = 0; i < 10; ++i) {
+						aData.push({
+							"Country": "Country" + i,
+							 "Profit": Math.round(Math.random() * 1000000),
+							 "Forcast": Math.random() * 100000,
+							 "Revenue0": Math.random() * 100000,
+							 "Revenue1": Math.random() * 100000,
+							 "Revenue2": Math.random() * 100000,
+							 "Revenue3": Math.random() * 100000,
+							 "Revenue4": Math.random() * 100000				
+						});
+					};
+					var aModel = new sap.ui.model.json.JSONModel(aData);
+					oVizFrame.setModel(aModel);
+				}
+			}).placeAt('content');
+		</script>
+		
+	</head>
+	<body class="sapUiBody">
+		<div id="content"></div>
+	</body>
+</html>
