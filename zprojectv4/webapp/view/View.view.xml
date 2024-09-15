@@ -1,0 +1,243 @@
+<mvc:View
+    controllerName="zprojectv4.controller.View"
+    xmlns:mvc="sap.ui.core.mvc"
+    displayBlock="true"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:l="sap.ui.layout"
+    xmlns:core="sap.ui.core"
+    xmlns:viz="sap.viz.ui5.controls"
+    xmlns:viz.feeds="sap.viz.ui5.controls.common.feeds"
+    xmlns:viz.data="sap.viz.ui5.data"
+    xmlns:commons="sap.suite.ui.commons"
+    class="GridPropertiesSample"
+>
+    <Page
+        id="page"
+        showHeader="false"
+    >
+        <content>
+            <l:VerticalLayout width="100%">
+                <l:VerticalLayout
+                    width="100%"
+                    class="gridWrapper"
+                >
+                    <l:Grid
+                        containerQuery="true"
+                        vSpacing="1"
+                        hSpacing="1"
+                        defaultSpan="L12 M12 S12"
+                    >
+                        <core:HTML
+                            content="&lt;div class=&quot;exampleDiv&quot; /&gt;"
+                        />
+                    </l:Grid>
+                    <l:VerticalLayout
+                        width="100%"
+                        class="gridWrapper"
+                    >
+                        <l:Grid
+                            containerQuery="true"
+                            vSpacing="1"
+                            hSpacing="1"
+                            defaultSpan="L6 M6 S12"
+                        >
+                            <viz:VizFrame
+                                id="idVizFrameLeftUp"
+                                height="250px"
+                                width="100%"
+                                uiConfig="{applicationSet:'fiori'}"
+                                vizType='column'
+                            >
+                                <viz:dataset>
+                                    <viz.data:FlattenedDataset
+                                        data="{/ZZXC_main_data_cds}"
+                                        id="idVizDataSetLeftUp"
+                                    >
+                                        <viz.data:dimensions>
+                                            <viz.data:DimensionDefinition
+                                                name="Cost Type"
+                                                value="{CostTypeId}"
+                                            />
+                                        </viz.data:dimensions>
+                                        <viz.data:measures>
+                                            <viz.data:MeasureDefinition
+                                                name="Week"
+                                                value="{Weekvalue}"
+                                            />
+                                            <viz.data:MeasureDefinition
+                                                name="Current Year"
+                                                value="{Curryearvalue}"
+                                            />
+                                            <viz.data:MeasureDefinition
+                                                name="Last Year"
+                                                value="{Lastyearvalue}"
+                                            />
+                                        </viz.data:measures>
+                                    </viz.data:FlattenedDataset>
+                                </viz:dataset>
+                                <viz:feeds>
+                                    <viz.feeds:FeedItem
+                                        uid="valueAxis"
+                                        type="Measure"
+                                        values="Week,Current Year,Last Year"
+                                    />
+                                    <viz.feeds:FeedItem
+                                        uid="categoryAxis"
+                                        type="Dimension"
+                                        values="Cost Type"
+                                    />
+                                </viz:feeds>
+                            </viz:VizFrame>
+                            <viz:VizFrame
+                                id="idVizFrameRightUp"
+                                height="250px"
+                                width="100%"
+                                uiConfig="{applicationSet:'fiori'}"
+                                vizType='line'
+                            >
+                                <viz:dataset>
+                                    <viz.data:FlattenedDataset
+                                        data="{/ZZXC_main_data_cds}"
+                                        id="idVizDataSetRightUp"
+                                    >
+                                        <viz.data:dimensions>
+                                            <viz.data:DimensionDefinition
+                                                name="Cost Type"
+                                                value="{CostTypeId}"
+                                            />
+                                        </viz.data:dimensions>
+                                        <viz.data:measures>
+                                            <viz.data:MeasureDefinition
+                                                name="Week"
+                                                value="{Weekvalue}"
+                                            />
+                                            <viz.data:MeasureDefinition
+                                                name="Current Year"
+                                                value="{Curryearvalue}"
+                                            />
+                                            <viz.data:MeasureDefinition
+                                                name="Last Year"
+                                                value="{Lastyearvalue}"
+                                            />
+                                        </viz.data:measures>
+                                    </viz.data:FlattenedDataset>
+                                </viz:dataset>
+                                <viz:feeds>
+                                    <viz.feeds:FeedItem
+                                        uid="valueAxis"
+                                        type="Measure"
+                                        values="Week"
+                                    />
+                                    <viz.feeds:FeedItem
+                                        uid="categoryAxis"
+                                        type="Dimension"
+                                        values="Cost Type"
+                                    />
+                                </viz:feeds>
+                            </viz:VizFrame>
+
+                            <viz:VizFrame
+                                id="idVizFrameLeftDown"
+                                height="250px"
+                                width="100%"
+                                uiConfig="{applicationSet:'fiori'}"
+                                vizType='radar'
+                            >
+                                <viz:dataset>
+                                    <viz.data:FlattenedDataset
+                                        data="{/ZZXC_main_data_cds}"
+                                        id="idVizDataSetLeftDown"
+                                    >
+                                        <viz.data:dimensions>
+                                            <viz.data:DimensionDefinition
+                                                name="Cost Type"
+                                                value="{CostTypeId}"
+                                            />
+                                        </viz.data:dimensions>
+                                        <viz.data:measures>
+                                            <viz.data:MeasureDefinition
+                                                name="Week"
+                                                value="{Weekvalue}"
+                                            />
+                                            <viz.data:MeasureDefinition
+                                                name="Current Year"
+                                                value="{Curryearvalue}"
+                                            />
+                                            <viz.data:MeasureDefinition
+                                                name="Last Year"
+                                                value="{Lastyearvalue}"
+                                            />
+                                        </viz.data:measures>
+                                    </viz.data:FlattenedDataset>
+                                </viz:dataset>
+                                <viz:feeds>
+                                    <viz.feeds:FeedItem
+                                        uid="valueAxis"
+                                        type="Measure"
+                                        values="Week"
+                                    />
+                                    <viz.feeds:FeedItem
+                                        uid="categoryAxis"
+                                        type="Dimension"
+                                        values="Cost Type"
+                                    />
+                                </viz:feeds>
+                            </viz:VizFrame>
+                            <viz:VizFrame
+                                id="idVizFrameRightDown"
+                                height="250px"
+                                width="100%"
+                                uiConfig="{applicationSet:'fiori'}"
+                                vizType='heatmap'
+                            >
+                                <viz:dataset>
+                                    <viz.data:FlattenedDataset
+                                        data="{/ZZXC_main_data_cds}"
+                                        id="idVizDataSetRightDown"
+                                    >
+                                        <viz.data:dimensions>
+                                            <viz.data:DimensionDefinition
+                                                name="Cost Type"
+                                                value="{CostTypeId}"
+                                            />
+                                        </viz.data:dimensions>
+                                        <viz.data:measures>
+                                            <viz.data:MeasureDefinition
+                                                name="Week"
+                                                value="{Weekvalue}"
+                                            />
+                                            <viz.data:MeasureDefinition
+                                                name="Current Year"
+                                                value="{Curryearvalue}"
+                                            />
+                                            <viz.data:MeasureDefinition
+                                                name="Last Year"
+                                                value="{Lastyearvalue}"
+                                            />
+                                        </viz.data:measures>
+                                    </viz.data:FlattenedDataset>
+                                </viz:dataset>
+                                <viz:feeds>
+                                    <viz.feeds:FeedItem
+                                        uid="color"
+                                        type="Measure"
+                                        values="Week"
+                                    />
+                                    <viz.feeds:FeedItem
+                                        uid="categoryAxis"
+                                        type="Dimension"
+                                        values="Cost Type"
+                                    />
+                                </viz:feeds>
+                                <viz:dependents>
+                                    <viz:Popover id="idPopOver" />
+                                </viz:dependents>
+                            </viz:VizFrame>
+                        </l:Grid>
+                    </l:VerticalLayout>
+                </l:VerticalLayout>
+            </l:VerticalLayout>
+        </content>
+    </Page>
+</mvc:View>

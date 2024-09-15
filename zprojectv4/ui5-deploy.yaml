@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=https://sap.github.io/ui5-tooling/schema/ui5.yaml.json
+
+specVersion: "3.1"
+metadata:
+  name: zprojectv4
+type: application
+builder:
+  resources:
+    excludes:
+      - /test/**
+      - /localService/**
+  customTasks:
+    - name: deploy-to-abap
+      afterTask: generateCachebusterInfo
+      configuration:
+        target: 
+          url: http://sapapped1.sitc.com:8010/
+          client: 700
+          auth: basic
+          params:
+            sap-language: en
+        credentials:
+          username: env:UI5_USERNAME
+          password: env:UI5_PASSWORD
+        app:
+          name: ZZXAREP01
+          description: dd
+          package: Z001
+          transport: ED1K946765
+        exclude:
+          - /test/

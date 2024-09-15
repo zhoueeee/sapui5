@@ -1,0 +1,128 @@
+<mvc:View
+    xmlns:table="sap.ui.table"
+    controllerName="zprojectv4.controller.CostTypeDetail"
+    xmlns:mvc="sap.ui.core.mvc"
+    displayBlock="true"
+    xmlns="sap.m"
+    xmlns:viz="sap.viz.ui5.controls"
+    xmlns:viz.feeds="sap.viz.ui5.controls.common.feeds"
+    xmlns:viz.data="sap.viz.ui5.data"
+    xmlns:u="sap.ui.unified"
+>
+    <Page
+        id="page"
+        title="{i18n>title}"
+        showNavButton="true"
+        navButtonPress=".onNavBack"
+    >
+        <content>
+            <viz:VizFrame
+                id="idVizFrameDetail"
+                uiConfig="{applicationSet:'fiori'}"
+                height='100%'
+                width="100%"
+                vizType='column'
+                selectData=".SelectData"
+            >
+                <viz:dataset>
+                    <viz.data:FlattenedDataset data="{/ZZXc_ITEM_DATA_CDS}">
+                        <viz.data:dimensions>
+                            <viz.data:DimensionDefinition
+                                name="Vendor"
+                                value="{Vendor}"
+                            />
+                        </viz.data:dimensions>
+                        <viz.data:measures>
+                            <viz.data:MeasureDefinition
+                                name="Week"
+                                value="{Weekvalue}"
+                            />
+                            <viz.data:MeasureDefinition
+                                name="Current Year"
+                                value="{Curryearvalue}"
+                            />
+                            <viz.data:MeasureDefinition
+                                name="Last Year"
+                                value="{Lastyearvalue}"
+                            />
+                        </viz.data:measures>
+                    </viz.data:FlattenedDataset>
+                </viz:dataset>
+
+                <viz:feeds>
+                    <viz.feeds:FeedItem
+                        uid="valueAxis"
+                        type="Measure"
+                        values="Week,Current Year,Last Year"
+                    />
+                    <viz.feeds:FeedItem
+                        uid="categoryAxis"
+                        type="Dimension"
+                        values="Vendor"
+                    />
+                </viz:feeds>
+                <viz:dependents>
+                    <viz:Popover id="idPopOverDetail" />
+                </viz:dependents>
+            </viz:VizFrame>
+
+            <table:Table
+                id="tableDetail"
+                enableSelectAll="false"
+                rows="{/ZZXc_ITEM_DATA_CDS}"
+                selectionMode="None"
+            >
+                <table:columns>
+                    <table:Column autoResizable="true">
+                        <Label text="Vendor" />
+                    </table:Column>
+                    <table:Column autoResizable="true">
+                        <Label text="Vendor" />
+                        <table:template>
+                            <Text
+                                text="{Vendor}"
+                                wrapping="false"
+                            />
+                        </table:template>
+                    </table:Column>
+                    <table:Column autoResizable="true">
+                        <Label text="Week" />
+                        <table:template>
+                            <u:Currency
+                                value="{
+								path: 'Weekvalue',
+								type: 'sap.ui.model.type.String'
+							}"
+                                currency="{CurrencyCode}"
+                            />
+                        </table:template>
+                    </table:Column>
+                    <table:Column autoResizable="true">
+                        <Label text="Year" />
+                        <table:template>
+                            <u:Currency
+                                value="{
+								path: 'Curryearvalue',
+								type: 'sap.ui.model.type.String'
+							}"
+                                currency="{CurrencyCode}"
+                            />
+                        </table:template>
+                    </table:Column>
+                    <table:Column autoResizable="true">
+                        <Label text="Last Year" />
+                        <table:template>
+                            <u:Currency
+                                value="{
+								path: 'Lastyearvalue',
+								type: 'sap.ui.model.type.String'
+							}"
+                                currency="{CurrencyCode}"
+                            />
+                        </table:template>
+                    </table:Column>
+                </table:columns>
+            </table:Table>
+        </content>
+    </Page>
+</mvc:View>
