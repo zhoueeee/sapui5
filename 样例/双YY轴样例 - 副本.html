@@ -90,7 +90,7 @@ chartFormatter.registerCustomFormatter(FIORI_PERCENTAGE_FORMAT_2, function(value
 
 		    var oVizFrame = new sap.viz.ui5.controls.VizFrame("vizFrame", {
 		 
-		        'vizType' : 'info/dual_combination',
+		        'vizType' : 'info/dual_horizontal_combination', //'info/dual_combination',
 			uiConfig:{applicationSet:'fiori'}   //影响POPOVER调用customDataControl功能
 		    });
 
@@ -99,7 +99,7 @@ chartFormatter.registerCustomFormatter(FIORI_PERCENTAGE_FORMAT_2, function(value
 
 oVizFrame .setVizProperties({
 	interaction: {
- noninteractiveMode: false,  // 禁止所有图形的交互操作
+ noninteractiveMode: true,  // 禁止所有图形的交互操作
 		syncValueAxis: false
 	},
 	scales:{
@@ -179,47 +179,15 @@ oVizFrame .setVizProperties({
 		    oVizFrame.addFeed(feedValueAxis2);
 		    oVizFrame.addFeed(categoryAxis);
  
-		  
+		   var oPopOver = new sap.viz.ui5.controls.Popover({
+	customDataControl:  function(data){
+		return new sap.m.Text({
+            text: 'Custom Information: '
+        });
+                                                               }	
+                                                           });
+                                  oPopOver.connect(oVizFrame.getVizUid()); 
 		    oVizFrame.placeAt('content');
- 
-
- var vizslider = new sap.viz.ui5.controls.VizSlider({
-          'uiConfig' : {
-            'applicationSet': 'fiori'
-          },
-          'vizType' : 'info/dual_combination'  });	
-         
-		    var oDataset1 = new sap.viz.ui5.data.FlattenedDataset({data:{path: '/result/0/data'},dimensions:
-[{name: 'currency', value: '{currency}'}],measures:[{name: 'YTD', value: '{YTD}'},{name: 'YOY', value: '{YOY}'}
-,{name: 'YTDP', value: '{YTDP}',unit:"%"}
-,{name: 'YOYP', value: '{YOYP}',unit:"%"}]});
-
-vizslider.setDataset(oDataset1 );
-		vizslider.setModel(oModel);
-
-		    var feedValueAxis1 = new sap.viz.ui5.controls.common.feeds.FeedItem({
-		        uid : "valueAxis",
-		        type : "Measure",
-		        values : 
-		            ["YTD","YOY"]
- 
-		    }),  feedValueAxis21 = new sap.viz.ui5.controls.common.feeds.FeedItem({
-		        uid : "valueAxis2",
-		        type : "Measure",
-		        values : 
-		            ["YTDP","YOYP"]
- 
-		    }),
-		   categoryAxis1 = new sap.viz.ui5.controls.common.feeds.FeedItem({
-		        uid : "categoryAxis",
-		        type : "Dimension",
-		        values : ["currency"]
-		    });
-
-		    vizslider.addFeed(feedValueAxis1); 
-		    vizslider.addFeed(feedValueAxis21);
-		    vizslider.addFeed(categoryAxis1);
-vizslider.placeAt("content");
  
         
     </script>

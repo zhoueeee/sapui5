@@ -30,7 +30,13 @@ server:
       configuration:
         ignoreCertError: false # If set to true, certificate errors will be ignored. E.g. self-signed certificates will be accepted
         backend:
-          - path: /sap
+          - path: /sap/opu/odata/sap/ZSB_CESAT_001
+            url: http://sapapped1.sitc.com:8010
+            client: '800'
+          - path: /sap/opu/odata/sap/ZSB_ZJYEW_001
+            url: http://sapapped1.sitc.com:8010
+            client: '800'
+          - path: /sap/opu/odata/sap/ZSB_CEBCA_001
             url: http://sapapped1.sitc.com:8010
             client: '800'
     - name: sap-fe-mockserver

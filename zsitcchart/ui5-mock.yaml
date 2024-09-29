@@ -23,6 +23,12 @@ server:
           - path: /sap/opu/odata/sap/ZSB_ZJYEW_001
             url: http://sapapped1.sitc.com:8010
             client: "800"
+          - path: /sap/opu/odata/sap/ZSB_CESAT_001
+            url: http://sapapped1.sitc.com:8010
+            client: "800"
+          - path: /sap/opu/odata/sap/ZSB_CEBCA_001
+            url: http://sapapped1.sitc.com:8010
+            client: "700"
     - name: fiori-tools-appreload
       afterMiddleware: compression
       configuration:
@@ -39,9 +45,21 @@ server:
             metadataXmlPath: ./webapp/localService/metadata.xml
             mockdataRootPath: ./webapp/localService/data
           - urlPath: /sap/opu/odata/sap/ZSB_ZJYEW_001
-            metadataPath: ./webapp/localService/metadata.xml
-            mockdataPath: ./webapp/localService/mockdata
+            generateMockData: true
+            metadataXmlPath: ./webapp/localService/ZSB_ZJYEW_001/metadata.xml
+            mockdataRootPath: ./webapp/localService/ZSB_ZJYEW_001/mockdata
+          - urlPath: /sap/opu/odata/sap/ZSB_CESAT_001
+            generateMockData: true
+            metadataXmlPath: ./webapp/localService/ZSB_CESAT_001/metadata.xml
+            mockdataRootPath: ./webapp/localService/ZSB_CESAT_001/mockdata
+          - urlPath: /sap/opu/odata/sap/ZSB_CEBCA_001
+            metadataPath: ./webapp/localService/ZSB_CEBCA_001/metadata.xml
+            mockdataPath: ./webapp/localService/ZSB_CEBCA_001/mockdata
             generateMockData: true
         annotations:
-          - localPath: ./webapp/localService/ZSB_ZJYEW_001_Annotation.xml
+          - localPath: ./webapp/localService/ZSB_ZJYEW_001/ZSB_ZJYEW_001_Annotation.xml
             urlPath: /sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZSB_ZJYEW_001_VAN',Version='0001')/$value/
+          - localPath: ./webapp/localService/ZSB_CESAT_001/ZSB_CESAT_001_Annotation.xml
+            urlPath: /sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZSB_CESAT_001_VAN',Version='0001')/$value/
+          - localPath: ./webapp/localService/ZSB_CEBCA_001/ZSB_CEBCA_001_Annotation.xml
+            urlPath: /sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZSB_CEBCA_001_VAN',Version='0001')/$value/

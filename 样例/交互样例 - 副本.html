@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+    <title>Custom control renderer</title>
+ 
+    <script id="sap-ui-bootstrap"
+        src="https://sapui5.hana.ondemand.com/resources/sap-ui-core.js"
+        data-sap-ui-theme="sap_bluecrystal"
+        data-sap-ui-libs="sap.m,sap.viz"></script>
+
+ 
+    <script> 
+sap.ui.getCore().attachInit(function () {
+
+    // 创建 ComboBox
+    var oComboBox = new sap.m.ComboBox({
+        placeholder: "请选择一个选项",
+        selectedKey: "3",
+        items: [
+          new sap.ui.core.Item({ key: "3", text: "3年" }),
+          new sap.ui.core.Item({ key: "5", text: "5年" }),
+          new sap.ui.core.Item({ key: "6", text: "6年" })
+        ],
+        change: function (oEvent) {
+            const sKey = oEvent.getSource().getSelectedKey();    
+            updateVizFrame(sKey);    
+        }
+    });
+
+    // 数据模型
+    var businessData = {
+        "data": [
+            { "system": "集运体系", "2023": 1111, "2024": 999, "2022": 888, "2021": 983, "2020": 942, "2019": 921 },
+            { "system": "航运体系", "2023": 1321, "2024": 666, "2022": 345, "2021": 777, "2020": 555, "2019": 222 },
+            { "system": "物流体系", "2023": 1090, "2024": 622, "2022": 332, "2021": 723, "2020": 521, "2019": 223 }
+        ]
+    };
+
+    // JSON模型
+    var oModel = new sap.ui.model.json.JSONModel();
+    oModel.setData(businessData);
+
+    // 数据集
+    var oDataset = new sap.viz.ui5.data.FlattenedDataset({
+        data: { path: '/data' },
+        dimensions: [{ name: 'system', value: '{system}' }],
+        measures: [
+            { name: '2024', value: '{2024}' },
+            { name: '2023', value: '{2023}' },
+            { name: '2022', value: '{2022}' },
+            { name: '2021', value: '{2021}' },
+            { name: '2020', value: '{2020}' },
+            { name: '2019', value: '{2019}' }
+        ]
+    });
+
+    // 创建 VizFrame
+    var oVizFrame = new sap.viz.ui5.controls.VizFrame({
+        'vizType': 'column',
+        uiConfig: { applicationSet: 'fiori' }
+    });
+
+    oVizFrame.setDataset(oDataset);
+    oVizFrame.setModel(oModel);
+
+var scales = [{
+ 'feed': 'dataFrame',
+ 'currentValue': 'Number',
+ 'domain':[10,20,500,1200,3000]
+}];
+var vizScalesOption = {replace: true};
+oVizFrame.setVizScales(scales, vizScalesOption); 
+
+    // 初始 FeedItems
+    var feedValueAxis = new sap.viz.ui5.controls.common.feeds.FeedItem({
+        uid: "valueAxis",
+        type: "Measure",
+        values: ["2024", "2023", "2022"]
+    });
+    var categoryAxis = new sap.viz.ui5.controls.common.feeds.FeedItem({
+        uid: "categoryAxis",
+        type: "Dimension",
+        values: ["system"]
+    });
+
+    oVizFrame.addFeed(feedValueAxis);
+    oVizFrame.addFeed(categoryAxis);
+
+    // 开关控件
+    var oSwitch = new sap.m.Switch({
+        state: false,
+        change: function (oEvent) {
+            var bState = oEvent.getParameter("state");
+            oVizFrame.setVizProperties({
+                interaction: { noninteractiveMode: bState }
+            });
+        }
+    });
+
+    // 更新图表函数
+    function updateVizFrame(sDimensionKey) {
+        oVizFrame.destroyFeeds();
+
+        const yearBase = ["2024", "2023", "2022"];
+        const additionalYears = {
+            '5': ["2021", "2020"],
+            '6': ["2021", "2020", "2019"]
+        };
+
+        const dimensionArray = yearBase.concat(additionalYears[sDimensionKey] || []);
+
+        const feedValueAxis01 = new sap.viz.ui5.controls.common.feeds.FeedItem({
+            uid: "valueAxis",
+            type: "Measure",
+            values: dimensionArray
+        });
+
+        const categoryAxis01 = new sap.viz.ui5.controls.common.feeds.FeedItem({
+            uid: "categoryAxis",
+            type: "Dimension",
+            values: ["system"]
+        });
+
+        oVizFrame.addFeed(feedValueAxis01);
+        oVizFrame.addFeed(categoryAxis01);
+    }
+
+    // 页面布局
+    var oPage = new sap.m.Page("page1",{
+        content: [
+            new sap.m.Label({ text: "请选择一个选项：" }), 
+            oComboBox,
+            new sap.m.Label({ text: "关闭图形交互功能" }),
+            oSwitch,
+            oVizFrame
+        ]
+    });
+
+    // Popover绑定
+    var oPopOver = new sap.viz.ui5.controls.Popover();
+    oPopOver.connect(oVizFrame.getVizUid());
+
+    // App初始化
+    var oApp = new sap.m.App({ initialPage: "page1" });
+    oApp.addPage(oPage);
+    oApp.placeAt("content");
+
+});
+
+    </script>
+ 
+</head>
+ 
+<body class="sapUiBody">
+    <div id="content"></div>
+</body>
+</html>

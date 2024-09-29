@@ -25,7 +25,7 @@
                     <layout:Grid
                         defaultSpan="L2 M2 S12"
                         vSpacing="0"
-                        hSpacing="0"
+                        hSpacing="1"
                     >
                         <VBox
                             class='settingsBox'
@@ -35,12 +35,13 @@
                                 text="{i18n>year}"
                                 design="Bold"
                                 class='settingsLabel'
+                                visible="false"
                             />
-                            <Select
+                            <MultiComboBox
                                 id='idYearSelect'
-                                class='settingsSelect'
-                                change='onYearChanged'
+                                selectionFinish='onYearChangeFinish'
                                 width="100%"
+                                visible="false"
                             />
                         </VBox>
                         <VBox
@@ -51,12 +52,14 @@
                                 text="{i18n>week}"
                                 design="Bold"
                                 class='settingsLabel'
+                                visible="false"
                             />
                             <Select
                                 id='idWeekSelect'
                                 class='settingsSelect'
                                 change='onWeekChanged'
                                 width="100%"
+                                visible="false"
                             />
                         </VBox>
                     </layout:Grid>
@@ -71,9 +74,10 @@
                 >
                     <layout:Grid
                         id="idGridChart"
+                        class="sapUiSmallMargin"
                         containerQuery="true"
                         vSpacing="0"
-                        hSpacing="0"
+                        hSpacing="1"
                         defaultSpan="L6 M6 S12"
                     />
                 </layout:VerticalLayout>

@@ -20,7 +20,7 @@
                 "uri": "/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZSB_ZJYEW_001_VAN',Version='0001')/$value/",
                 "type": "ODataAnnotation",
                 "settings": {
-                    "localUri": "localService/ZSB_ZJYEW_001_Annotation.xml"
+                    "localUri": "localService/ZSB_ZJYEW_001/ZSB_ZJYEW_001_Annotation.xml"
                 }
             },
             "ZSB_ZJYEW_001": {
@@ -30,7 +30,43 @@
                     "annotations": [
                         "ZSB_ZJYEW_001_Annotation"
                     ],
-                    "localUri": "localService/metadata.xml",
+                    "localUri": "localService/ZSB_ZJYEW_001/metadata.xml",
+                    "odataVersion": "2.0"
+                }
+            },
+            "ZSB_CESAT_001_Annotation": {
+                "uri": "/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZSB_CESAT_001_VAN',Version='0001')/$value/",
+                "type": "ODataAnnotation",
+                "settings": {
+                    "localUri": "localService/ZSB_CESAT_001/ZSB_CESAT_001_Annotation.xml"
+                }
+            },
+            "ZSB_CESAT_001": {
+                "uri": "/sap/opu/odata/sap/ZSB_CESAT_001",
+                "type": "OData",
+                "settings": {
+                    "annotations": [
+                        "ZSB_CESAT_001_Annotation"
+                    ],
+                    "localUri": "localService/ZSB_CESAT_001/metadata.xml",
+                    "odataVersion": "2.0"
+                }
+            },
+            "ZSB_CEBCA_001_Annotation": {
+                "uri": "/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZSB_CEBCA_001_VAN',Version='0001')/$value/",
+                "type": "ODataAnnotation",
+                "settings": {
+                    "localUri": "localService/ZSB_CEBCA_001/ZSB_CEBCA_001_Annotation.xml"
+                }
+            },
+            "ZSB_CEBCA_001": {
+                "uri": "/sap/opu/odata/sap/ZSB_CEBCA_001",
+                "type": "OData",
+                "settings": {
+                    "annotations": [
+                        "ZSB_CEBCA_001_Annotation"
+                    ],
+                    "localUri": "localService/ZSB_CEBCA_001/metadata.xml",
                     "odataVersion": "2.0"
                 }
             }
@@ -89,12 +125,50 @@
                         "sap-value-list": "none"
                     }
                 }
+            },
+            "ZSB_CESAT_001": {
+                "dataSource": "ZSB_CESAT_001",
+                "preload": true,
+                "settings": {
+                    "defaultBindingMode": "TwoWay",
+                    "defaultCountMode": "Inline",
+                    "refreshAfterChange": false,
+                    "metadataUrlParams": {
+                        "sap-value-list": "none"
+                    }
+                }
+            },
+            "ZSB_CEBCA_001": {
+                "dataSource": "ZSB_CEBCA_001",
+                "preload": true,
+                "settings": {
+                    "defaultBindingMode": "TwoWay",
+                    "defaultCountMode": "Inline",
+                    "refreshAfterChange": false,
+                    "metadataUrlParams": {
+                        "sap-value-list": "none"
+                    }
+                }
             }
         },
         "resources": {
             "css": [
                 {
                     "uri": "css/style.css"
+                }
+            ],
+            "js": [
+                {
+                    "uri": "libs/rgbcolor.js"
+                },
+                {
+                    "uri": "libs/stackblur.js"
+                },
+                {
+                    "uri": "libs/canvg.js"
+                },
+                {
+                    "uri": "libs/jsPDF.js"
                 }
             ]
         },
@@ -115,6 +189,27 @@
                     "target": [
                         "TargetView"
                     ]
+                },
+                {
+                    "name": "vizframeCESAT",
+                    "pattern": "vizframeCESAT/{years}/{week}",
+                    "target": [
+                        "vizframeCESATLargeView"
+                    ]
+                },
+                {
+                    "name": "listCESATOrg",
+                    "pattern": "vizframeCESAT/list/{years}/{week}/{org}",
+                    "target": [
+                        "listCESATOrgView"
+                    ]
+                },
+                {
+                    "name": "vizframeCEBCA",
+                    "pattern": "vizframeCEBCA/{years}/{week}",
+                    "target": [
+                        "vizframeCEBCALargeView"
+                    ]
                 }
             ],
             "targets": {
@@ -124,6 +219,30 @@
                     "clearControlAggregation": false,
                     "viewId": "View",
                     "viewName": "View"
+                },
+                "vizframeCESATLargeView": {
+                    "viewType": "XML",
+                    "viewPath": "zdemowithpar.view.CESAT",
+                    "transition": "slide",
+                    "clearControlAggregation": false,
+                    "viewId": "idVizframeCESATLargeView",
+                    "viewName": "vizframeCESATLargeView"
+                },
+                "listCESATOrgView": {
+                    "viewPath": "zdemowithpar.view.CESAT",
+                    "viewType": "XML",
+                    "transition": "slide",
+                    "clearControlAggregation": false,
+                    "viewId": "listCESATOrg",
+                    "viewName": "listCESATOrgView"
+                },
+                "vizframeCEBCALargeView": {
+                    "viewType": "XML",
+                    "viewPath": "zdemowithpar.view.CEBCA",
+                    "transition": "slide",
+                    "clearControlAggregation": false,
+                    "viewId": "idVizframeCEBCALargeView",
+                    "viewName": "vizframeCEBCALargeView"
                 }
             }
         },
