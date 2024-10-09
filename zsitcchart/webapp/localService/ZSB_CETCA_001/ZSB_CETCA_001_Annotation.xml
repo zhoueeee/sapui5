@@ -21,15 +21,12 @@
     <edmx:Reference Uri="../../catalogservice;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_HTML5',Version='0001',SAP__Origin='')/$value">
         <edmx:Include Namespace="com.sap.vocabularies.HTML5.v1" Alias="HTML5"/>
     </edmx:Reference>
-    <edmx:Reference Uri="../../../sap/zsb_cebca_001/$metadata">
-        <edmx:Include Namespace="ZSB_CEBCA_001" Alias="SAP"/>
+    <edmx:Reference Uri="../../../sap/zsb_cetca_001/$metadata">
+        <edmx:Include Namespace="ZSB_CETCA_001" Alias="SAP"/>
     </edmx:Reference>
     <edmx:DataServices>
-        <Schema Namespace="zsb_cebca_001_van.v1" xmlns="http://docs.oasis-open.org/odata/ns/edm">
-            <Annotations Target="cds_zsd_cebca_001.yearcurrrateType/p_ZWEEK">
-                <Annotation Term="UI.Hidden"/>
-            </Annotations>
-            <Annotations Target="cds_zsd_cebca_001.orgType/p_ZWEEK">
+        <Schema Namespace="zsb_cetca_001_van.v1" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+            <Annotations Target="cds_zsd_cecat_001.costTypeType/p_ZWEEK">
                 <Annotation Term="UI.Hidden"/>
             </Annotations>
         </Schema>

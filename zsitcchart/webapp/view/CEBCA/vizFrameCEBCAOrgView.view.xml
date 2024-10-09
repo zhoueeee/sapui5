@@ -1,27 +1,27 @@
 <mvc:View
-    controllerName="zdemowithpar.controller.CEBCA.vizframeCEBCALargeView"
+    controllerName="zdemowithpar.controller.CEBCA.vizFrameCEBCAOrgView"
     xmlns:html="http://www.w3.org/1999/xhtml"
     xmlns:mvc="sap.ui.core.mvc"
     displayBlock="true"
     xmlns="sap.m"
-    height="100%"
     xmlns:viz="sap.viz.ui5.controls"
     xmlns:commons="sap.suite.ui.commons"
     xmlns:layout="sap.ui.layout"
+    xmlns:core="sap.ui.core"
 >
     <Page
-        id="pageCEBCA"
+        id="pageCEBCAOrg"
         showNavButton="true"
         navButtonPress=".onNavBack"
     >
         <layout:FixFlex
-            id='chartFixFlexCEBCA'
+            id='chartFixFlexCEBCAOrg'
             minFlexSize="250"
             fixContentSize="auto"
         >
             <layout:fixContent>
                 <Panel
-                    id='settingsPanelCEBCA'
+                    id='settingsPanelCEBCAOrg'
                     expandable="true"
                     expanded="true"
                     headerText="{i18n>settings}"
@@ -43,7 +43,7 @@
                                     class='settingsLabel'
                                 />
                                 <MultiComboBox
-                                    id='idYearSelectCEBCA'
+                                    id='idYearSelectCEBCAOrg'
                                     selectionFinish='onYearChangeFinish'
                                     width="100%"
                                 />
@@ -58,10 +58,25 @@
                                     class='settingsLabel'
                                 />
                                 <Select
-                                    id='idWeekSelectCEBCA'
+                                    id='idWeekSelectCEBCAOrg'
                                     class='settingsSelect'
                                     change='onWeekChanged'
                                     width="100%"
+                                />
+                            </VBox>
+                            <VBox
+                                width="100%"
+                                class='settingsBox'
+                            >
+                                <Label
+                                    text="{i18n>Org}"
+                                    design="Bold"
+                                    class='settingsLabel'
+                                />
+                                <Select
+                                    id='idOrgSelectListCEBCA'
+                                    width="100%"
+                                    change='onOrgChanged'
                                 />
                             </VBox>
                         </layout:Grid>
@@ -74,7 +89,7 @@
                     height="100%"
                 >
                     <commons:ChartContainer
-                        id="chartContainerCEBCA"
+                        id="chartContainerCEBCAOrg"
                         showFullScreen="true"
                         showPersonalization="false"
                         autoAdjustHeight="true"
@@ -85,17 +100,17 @@
                             <commons:ChartContainerContent>
                                 <commons:content>
                                     <viz:VizFrame
-                                        id="idVizframeCEBCA"
+                                        id="idVizframeCEBCAOrg"
                                         uiConfig="{applicationSet:'fiori'}"
                                     />
                                 </commons:content>
                             </commons:ChartContainerContent>
                         </commons:content>
                         <commons:toolbar>
-                            <OverflowToolbar id="appToolbarCEBCA">
+                            <OverflowToolbar id="appToolbarCEBCAOrg">
                                 <ToolbarSpacer />
                                 <Button
-                                    id="btnDownloadPDFCEBCA"
+                                    id="btnDownloadPDFCEBCAOrg"
                                     text="{i18n>btnDownloadPDF}"
                                     type="Transparent"
                                     press="onBtnDownloadPDF"
@@ -105,7 +120,7 @@
                         </commons:toolbar>
                     </commons:ChartContainer>
                     <viz:VizSlider
-                        id="idVizSliderCEBCA"
+                        id="idVizSliderCEBCAOrg"
                         uiConfig="{applicationSet:'fiori'}"
                         width="100%"
                         vizType="info/column"

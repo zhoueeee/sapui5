@@ -69,6 +69,24 @@
                     "localUri": "localService/ZSB_CEBCA_001/metadata.xml",
                     "odataVersion": "2.0"
                 }
+            },
+            "ZSB_CETCA_001_Annotation": {
+                "uri": "/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZSB_CETCA_001_VAN',Version='0001')/$value/",
+                "type": "ODataAnnotation",
+                "settings": {
+                    "localUri": "localService/ZSB_CETCA_001/ZSB_CETCA_001_Annotation.xml"
+                }
+            },
+            "ZSB_CETCA_001": {
+                "uri": "/sap/opu/odata/sap/ZSB_CETCA_001",
+                "type": "OData",
+                "settings": {
+                    "annotations": [
+                        "ZSB_CETCA_001_Annotation"
+                    ],
+                    "localUri": "localService/ZSB_CETCA_001/metadata.xml",
+                    "odataVersion": "2.0"
+                }
             }
         }
     },
@@ -118,7 +136,7 @@
                 "preload": true,
                 "dataSource": "ZSB_ZJYEW_001",
                 "settings": {
-                    "defaultBindingMode": "TwoWay",
+                    "defaultBindingMode": "OneWay",
                     "defaultCountMode": "Inline",
                     "refreshAfterChange": false,
                     "metadataUrlParams": {
@@ -130,7 +148,7 @@
                 "dataSource": "ZSB_CESAT_001",
                 "preload": true,
                 "settings": {
-                    "defaultBindingMode": "TwoWay",
+                    "defaultBindingMode": "OneWay",
                     "defaultCountMode": "Inline",
                     "refreshAfterChange": false,
                     "metadataUrlParams": {
@@ -140,6 +158,18 @@
             },
             "ZSB_CEBCA_001": {
                 "dataSource": "ZSB_CEBCA_001",
+                "preload": true,
+                "settings": {
+                    "defaultBindingMode": "OneWay",
+                    "defaultCountMode": "Inline",
+                    "refreshAfterChange": false,
+                    "metadataUrlParams": {
+                        "sap-value-list": "none"
+                    }
+                }
+            },
+            "ZSB_CETCA_001": {
+                "dataSource": "ZSB_CETCA_001",
                 "preload": true,
                 "settings": {
                     "defaultBindingMode": "TwoWay",
@@ -210,6 +240,13 @@
                     "target": [
                         "vizframeCEBCALargeView"
                     ]
+                },
+                {
+                    "name": "vizframeCEBCAOrg",
+                    "pattern": "vizframeCEBCAOrg/{years}/{week}",
+                    "target": [
+                        "vizframeCEBCAOrgView"
+                    ]
                 }
             ],
             "targets": {
@@ -243,6 +280,14 @@
                     "clearControlAggregation": false,
                     "viewId": "idVizframeCEBCALargeView",
                     "viewName": "vizframeCEBCALargeView"
+                },
+                "vizframeCEBCAOrgView": {
+                    "viewType": "XML",
+                    "viewPath": "zdemowithpar.view.CEBCA",
+                    "transition": "slide",
+                    "clearControlAggregation": false,
+                    "viewId": "idVizframeCEBCAOrgView",
+                    "viewName": "vizframeCEBCAOrgView"
                 }
             }
         },

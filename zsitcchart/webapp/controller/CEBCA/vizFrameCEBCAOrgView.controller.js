@@ -1,43 +1,41 @@
 sap.ui.define(
   [
     "sap/ui/core/mvc/Controller",
+    "sap/ui/core/routing/History",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
+    "sap/ui/core/Item",
     "sap/ui/model/json/JSONModel",
     "sap/viz/ui5/controls/VizFrame",
     "sap/viz/ui5/data/FlattenedDataset",
     "sap/viz/ui5/controls/common/feeds/FeedItem",
-    "sap/ui/core/routing/History",
-    "sap/viz/ui5/controls/Popover",
     "sap/viz/ui5/data/MeasureDefinition",
     "sap/viz/ui5/data/DimensionDefinition",
-    "sap/viz/ui5/controls/VizSlider"
+    "sap/viz/ui5/controls/VizSlider",
+    "sap/viz/ui5/controls/Popover"
   ],
-  function (BaseController, Filter, FilterOperator, JSONModel, VizFrame, FlattenedDataset, FeedItem, History, Popover
-    , MeasureDefinition, DimensionDefinition, VizSlider
+  function (BaseController,
+    History, Filter, FilterOperator, Item, JSONModel, VizFrame
+    , FlattenedDataset, FeedItem, MeasureDefinition, DimensionDefinition,
+    VizSlider, Popover
   ) {
     "use strict";
 
-    return BaseController.extend("zdemowithpar.controller.CEBCA.vizframeCEBCALargeView", {
-      oVizFrame: null,
-      _oLastestFilter: null,
+    return BaseController.extend("zdemowithpar.controller.CEBCA.vizFrameCEBCAOrgView.", {
       onInit() {
-        this.getOwnerComponent().getRouter().getRoute("vizframeCEBCA").attachMatched(this._onRouteMatched, this);
+        this.getOwnerComponent().getRouter().getRoute("vizframeCEBCAOrg").attachMatched(this._onRouteMatched, this);
       },
 
       _onRouteMatched(oEvent) {
-        this._bNavigationInProgress = true
-        this._sVizType = 'info/dual_combination';
         this.loadData(oEvent);
       },
 
       loadData: async function (oEvent) {
         try {
-          let oModel = this.getOwnerComponent().getModel();
           const oCESATModel = this.getOwnerComponent().getModel('ZSD_CESAT_001');
           const oCEBCAModel = this.getOwnerComponent().getModel('ZSD_CEBCA_001');
-          let oYearSelect = this.byId('idYearSelectCEBCA');
-          let oWeekSelect = this.byId("idWeekSelectCEBCA");
+          let oYearSelect = this.byId('idYearSelectCEBCAOrg');
+          let oWeekSelect = this.byId('idWeekSelectCEBCAOrg');
 
           // 1. 绑定年数据 
           oYearSelect.setModel(oCESATModel);
@@ -75,14 +73,14 @@ sap.ui.define(
 
           // 2. 绑定周数据并过滤当前年份
           oWeekSelect.setModel(oCESATModel);
-          const oFilter = new sap.ui.model.Filter("Zyear", sap.ui.model.FilterOperator.EQ, aSelectedYearKeys[0]);
+          const oFilter = new Filter("Zyear", FilterOperator.EQ, aSelectedYearKeys[0]);
           oWeekSelect.bindItems({
             path: '/yearweek',
             sorter: {
               path: 'Zweek',
               descending: false
             },
-            template: new sap.ui.core.Item({
+            template: new Item({
               key: "{Zweek}",
               text: "{Zweek}"
             })
@@ -104,117 +102,64 @@ sap.ui.define(
           // 3. 设置周的默认值
           oWeekSelect.setSelectedKey(sSelectWeek);
 
+          //设置体系的默认值
+          const oOrgSelect = this.byId('idOrgSelectListCEBCA');
+          oOrgSelect.bindItems({
+            path: 'ZSB_CESAT_001>/org',
+            template: new sap.ui.core.ListItem({
+              key: "{ZSB_CESAT_001>Value}",
+              text: "{ZSB_CESAT_001>Ddtext}",
+            })
+          });
+          await new Promise((resolve, reject) => {
+            const oBinding = oOrgSelect.getBinding("items");
+            if (oBinding) {
+              oBinding.attachDataReceived(() => {
+                resolve();
+              });
+            } else {
+              reject("Org binding failed");
+            }
+          });
+          oOrgSelect.setSelectedKey('T100');
+
           // 4. 使用 CEBCA 模型加载图表数据
           this.getOwnerComponent().getModel('ZSB_CEBCA_001').metadataLoaded().then(() => {
-            const sPath = "/yearcurrrate(p_ZWEEK='" + sSelectWeek + "')/Set";
+            const sPath = "/org(p_ZWEEK='" + sSelectWeek + "')/Set";
             var aYearFilters = aSelectedYearKeys.map(function (year) {
-              return new sap.ui.model.Filter("Zyear", sap.ui.model.FilterOperator.EQ, year);
+              return new Filter("Zyear", FilterOperator.EQ, year);
             });
             // 创建组合 Filter，使用 AND: false（即 OR）
-            var oYearCombinedFilter = new sap.ui.model.Filter({
+            var oYearCombinedFilter = new Filter({
               filters: aYearFilters,
               and: false
             });
+
+            // 创建 org = T100 的过滤器
+            const oOrgFilter = new sap.ui.model.Filter("org", sap.ui.model.FilterOperator.EQ, "T100");
+
+            //Zyear and Org
+            var oFinalFilter = new sap.ui.model.Filter({
+              filters: [oYearCombinedFilter, oOrgFilter],
+              and: true // 使用 AND 逻辑
+            });
+
             this.getOwnerComponent().getModel('ZSB_CEBCA_001').read(sPath, {
-              filters: [oYearCombinedFilter],
+              filters: [oFinalFilter],
               success: (oData) => {
-                this._drawCEBCAChart(this._transformCEBCAData(oData.results, aSelectedYearKeys), aSelectedYearKeys, 'idVizframeCEBCA'); // 绘制图表
+                this._drawCEBCAChart(this._transformCEBCAData(oData.results, aSelectedYearKeys), aSelectedYearKeys, 'idVizframeCEBCAOrg', 'T100'); // 绘制图表
               },
               error: (oError) => {
               }
             });
           });
+
         } catch (oError) {
           console.log(oError);
         }
-
       },
 
-      _transformCEBCAData(odataResult, years) {
-        const result = [];
-        const map = new Map();
-        const maxYear = Math.max(...years.map(Number)); //20240929
-        odataResult.forEach((item) => {
-          const key = item.waers;
-          if (!map.has(key)) {
-            let newObj = {
-              waers: item.waers
-            };
-            years.forEach(year => {
-              newObj[year] = 0.00;
-              newObj[`${year}prop`] = 0.0000
-            });
-            map.set(key, newObj);
-          }
-          const amountDivided = (parseFloat(item.usdamount) / 10000).toFixed(0); //20240929
-          map.get(key)[item.Zyear] = amountDivided;
-          map.get(key)[`${item.Zyear}prop`] = Number(item.currprop).toFixed(4);
-        });
-
-        result.push(...map.values());
-        result.sort((a, b) => Number(b[maxYear]) - Number(a[maxYear]));//20240929
-        return {
-          result: result
-        };
-      },
-
-
-      onYearChangeFinish: function (oEvent) {
-        const sSelectedYearKeys = oEvent.getSource().getSelectedKeys();
-        const maxYear = Math.max(...sSelectedYearKeys.map(Number));
-        const oWeekSelect = this.byId("idWeekSelectCEBCA")
-        const oFilter = new Filter("Zyear", FilterOperator.EQ, maxYear);
-        const oBinding = oWeekSelect.getBinding("items");
-        oBinding.filter([oFilter]);
-
-        let sWeekSelect = oWeekSelect.getSelectedKey();
-        oBinding.attachEventOnce('dataReceived', (oEvent) => {
-          const oData = oEvent.getParameter("data");
-          if (oData && oData.results && oData.results.length > 0) {
-            const bExists = oData.results.some(function (item) {
-              return item['Zweek'] === sWeekSelect;
-            });
-
-            if (!bExists) {
-              sWeekSelect = '1'
-            }
-          }
-
-          const oDataModel = this.getOwnerComponent().getModel('ZSB_CEBCA_001');
-          this._fetchAndDrawCEBCAData(oDataModel, sWeekSelect, sSelectedYearKeys);
-        })
-      },
-
-      _fetchAndDrawCEBCAData: function (oCESATModel, sCurrentWeek, aSelectedYearKeysStr) {
-        return new Promise((resolve, reject) => {
-          // 异步操作逻辑
-          oCESATModel.metadataLoaded().then(() => {
-            const sPath = "/yearcurrrate(p_ZWEEK='" + sCurrentWeek + "')/Set";
-            const aYearFilters = aSelectedYearKeysStr.map(year => new sap.ui.model.Filter("Zyear", sap.ui.model.FilterOperator.EQ, year));
-            const oYearCombinedFilter = new sap.ui.model.Filter({ filters: aYearFilters, and: false });
-
-            oCESATModel.read(sPath, {
-              filters: [oYearCombinedFilter],
-              success: (oData) => {
-                this._drawCEBCAChart(this._transformCEBCAData(oData.results, aSelectedYearKeysStr), aSelectedYearKeysStr);
-                resolve();
-              },
-              error: (oError) => {
-                reject(oError);
-              }
-            });
-          });
-        });
-      },
-
-      onWeekChanged: function (oEvent) {
-        const sWeekSelect = oEvent.getSource().getSelectedKey();
-        const sSelectedYearKeys = this.byId('idYearSelectCEBCA').getSelectedKeys();
-        const oDataModel = this.getOwnerComponent().getModel('ZSB_CEBCA_001');
-        this._fetchAndDrawCEBCAData(oDataModel, sWeekSelect, sSelectedYearKeys, 'idVizframeCEBCA');
-      },
-
-      _drawCEBCAChart(oData, ayears, idVizframe) {
+      _drawCEBCAChart(oData, ayears, idVizframe, sOrg) {
         const FIORI_PERCENTAGE_FORMAT_2 = "__UI5__PercentageMaxFraction2";
         const chartFormatter = sap.viz.ui5.format.ChartFormatter.getInstance();
         // 注册自定义格式器，百分比格式
@@ -230,7 +175,7 @@ sap.ui.define(
 
         const oJsonModel = new JSONModel(oData);
         const oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
-        let oVizFrame = this.byId('idVizframeCEBCA');
+        let oVizFrame = this.byId('idVizframeCEBCAOrg');
 
         if (!oVizFrame) {
           oVizFrame = new VizFrame(idVizframe, {
@@ -245,16 +190,22 @@ sap.ui.define(
           this.oVizFrame = oVizFrame;
         }
 
-        oVizFrame.attachBrowserEvent("click", function (oEvent) {
-          const sSelectYear = this.byId('idYearSelectCEBCA').getSelectedKeys().join('');
-          const sSelectWeek = this.byId('idWeekSelectCEBCA').getSelectedKey()
-          this.getOwnerComponent().getRouter().navTo('vizframeCEBCAOrg', { years: sSelectYear, week: sSelectWeek }, false);
-        }.bind(this))
+        //oVizFrame.attachBrowserEvent("click", function (oEvent) {
+        //  const sSelectYear = this.byId('idYearSelectCEBCA').getSelectedKeys().join('');
+        //  const sSelectWeek = this.byId('idWeekSelectCEBCA').getSelectedKey()
+        //  this.getOwnerComponent().getRouter().navTo('vizframeCEBCAOrg', { years: sSelectYear, week: sSelectWeek }, false);
+        //}.bind(this))
+        const sOrgPath = "/org('" + sOrg + "')/Ddtext";
+        const sDdtext = this.getOwnerComponent().getModel('ZSB_CESAT_001').getProperty(sOrgPath);
+        const sTitleText = (sDdtext ? sDdtext + "-" : "") + oResourceBundle.getText('titleofCEBCAchart');
 
         oVizFrame.setVizProperties({
           interaction: {
             noninteractiveMode: false,
-            syncValueAxis: false
+            syncValueAxis: false,
+            selectability: {
+              mode: 'SINGLE'
+            }
           },
           scales: {
             valueAxis: {
@@ -299,7 +250,7 @@ sap.ui.define(
             }
           },
           title: {
-            text: oResourceBundle.getText('titleofCEBCAchart')
+            text: sTitleText
           },
           valueAxis: {
             label: {
@@ -376,7 +327,11 @@ sap.ui.define(
         oVizFrame.addFeed(feedValueAxis2);
         oVizFrame.addFeed(categoryAxis);
 
-        const oVizSlider = this.byId('idVizSliderCEBCA');
+        // Popover绑定
+        var oPopOver = new Popover();
+        oPopOver.connect(oVizFrame.getVizUid());
+
+        const oVizSlider = this.byId('idVizSliderCEBCAOrg');
         oVizSlider.destroyDataset();
         const oJsonModelSlider = new JSONModel(oData);
         oVizSlider.setModel(oJsonModelSlider, 'viewModelSlider');
@@ -425,6 +380,113 @@ sap.ui.define(
         })
       },
 
+      _transformCEBCAData(odataResult, years) {
+        const result = []; debugger;
+        const map = new Map();
+        const maxYear = Math.max(...years.map(Number));
+        odataResult.forEach((item) => {
+          const key = item.waers;
+          if (!map.has(key)) {
+            let newObj = {
+              waers: item.waers
+            };
+            years.forEach(year => {
+              newObj[year] = 0.00;
+              newObj[`${year}prop`] = 0.0000
+            });
+            map.set(key, newObj);
+          }
+          const amountDivided = (parseFloat(item.usdamount) / 10000).toFixed(0);
+          map.get(key)[item.Zyear] = amountDivided;
+          map.get(key)[`${item.Zyear}prop`] = Number(item.currprop).toFixed(4);
+        });
+
+        result.push(...map.values());
+        result.sort((a, b) => Number(b[maxYear]) - Number(a[maxYear]));//20240929
+        return {
+          result: result
+        };
+      },
+
+      onYearChangeFinish: function (oEvent) {
+        const sSelectedYearKeys = oEvent.getSource().getSelectedKeys();
+        const maxYear = Math.max(...sSelectedYearKeys.map(Number));
+        const oWeekSelect = this.byId("idWeekSelectCEBCAOrg")
+        const oFilter = new Filter("Zyear", FilterOperator.EQ, maxYear);
+        const oBinding = oWeekSelect.getBinding("items");
+        oBinding.filter([oFilter]);
+
+        let sWeekSelect = oWeekSelect.getSelectedKey();
+        let sOrg = this.byId("idOrgSelectListCEBCA").getSelectedKey();
+        oBinding.attachEventOnce('dataReceived', (oEvent) => {
+          const oData = oEvent.getParameter("data");
+          if (oData && oData.results && oData.results.length > 0) {
+            const bExists = oData.results.some(function (item) {
+              return item['Zweek'] === sWeekSelect;
+            });
+
+            if (!bExists) {
+              sWeekSelect = '1'
+            }
+          }
+
+          const oDataModel = this.getOwnerComponent().getModel('ZSB_CEBCA_001');
+          this._fetchAndDrawCEBCAData(oDataModel, sWeekSelect, sSelectedYearKeys, sOrg);
+        })
+      },
+
+      _fetchAndDrawCEBCAData: function (oCESATModel, sCurrentWeek, aSelectedYearKeysStr, sOrg) {
+        return new Promise((resolve, reject) => {
+          // 异步操作逻辑
+          oCESATModel.metadataLoaded().then(() => {
+            const sPath = "/org(p_ZWEEK='" + sCurrentWeek + "')/Set";
+            const aYearFilters = aSelectedYearKeysStr.map(year => new sap.ui.model.Filter("Zyear", sap.ui.model.FilterOperator.EQ, year));
+
+            const oYearCombinedFilter = new sap.ui.model.Filter({ filters: aYearFilters, and: false });
+
+            // 创建Org的过滤器
+            const oOrgFilter = new sap.ui.model.Filter("org", sap.ui.model.FilterOperator.EQ, sOrg);
+
+            //Zyear and Org
+            var oFinalFilter = new sap.ui.model.Filter({
+              filters: [oYearCombinedFilter, oOrgFilter],
+              and: true
+            });
+
+            oCESATModel.read(sPath, {
+              filters: [oFinalFilter],
+              success: (oData) => {
+                this._drawCEBCAChart(this._transformCEBCAData(oData.results, aSelectedYearKeysStr), aSelectedYearKeysStr, 'idVizframeCEBCAOrg', sOrg);
+                resolve();
+              },
+              error: (oError) => {
+                this._drawCEBCAChart([], aSelectedYearKeysStr, 'idVizframeCEBCAOrg', sOrg);
+                reject(oError);
+              }
+            });
+          });
+        });
+      },
+
+      onWeekChanged: function (oEvent) {
+        const sWeekSelect = oEvent.getSource().getSelectedKey();
+        const sSelectedYearKeys = this.byId('idYearSelectCEBCAOrg').getSelectedKeys();
+        let sOrg = this.byId("idOrgSelectListCEBCA").getSelectedKey();
+        const oDataModel = this.getOwnerComponent().getModel('ZSB_CEBCA_001');
+        debugger
+        this._fetchAndDrawCEBCAData(oDataModel, sWeekSelect, sSelectedYearKeys, sOrg);
+      },
+
+      onOrgChanged(oEvent) {
+        const sOrg = oEvent.getSource().getSelectedKey();
+        const sSelectedYearKeys = this.byId('idYearSelectCEBCAOrg').getSelectedKeys();
+        let sWeekSelect = this.byId("idWeekSelectCEBCAOrg").getSelectedKey();
+        const oDataModel = this.getOwnerComponent().getModel('ZSB_CEBCA_001');
+        debugger
+        this._fetchAndDrawCEBCAData(oDataModel, sWeekSelect, sSelectedYearKeys, sOrg);
+
+      },
+
       onNavBack: function () {
         var oHistory, sPreviousHash;
 
@@ -436,19 +498,6 @@ sap.ui.define(
         } else {
           this.getOwnerComponent().getRouter().navTo("RouteView", {}, true /*no history*/);
         }
-      },
-
-      onBtnDownloadPDF: function () {
-
-        var ctrlString = "width=800px, height=600px"; // control page size
-        var wind = window.open("", "Print", ctrlString);
-        var sContent = this.byId('idVizframeCEBCA').exportToSVGString({
-          width: window.innerWidth,
-          height: window.innerheight
-        });
-        wind.document.write(sContent);
-        wind.print();
-
       }
     });
   }

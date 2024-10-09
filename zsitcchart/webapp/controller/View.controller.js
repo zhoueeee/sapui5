@@ -142,7 +142,8 @@ sap.ui.define([
                     //累计支出按币别分析表 
                     this.getOwnerComponent().getModel('ZSB_CEBCA_001').metadataLoaded().then(() => {
                         const sPath = "/yearcurrrate(p_ZWEEK='" + sCurrentWeek + "')/Set";
-                        var aYearFilters = aSelectedYearKeysStr.map(function (year) {
+                        var topYears = aSelectedYearKeysStr.map(Number).sort((a, b) => b - a).slice(0, 2);
+                        let aYearFilters = topYears.map(function (year) {
                             return new sap.ui.model.Filter("Zyear", sap.ui.model.FilterOperator.EQ, year);
                         });
                         // 创建组合 Filter，使用 AND: false（即 OR）
@@ -153,7 +154,7 @@ sap.ui.define([
                         this.getOwnerComponent().getModel('ZSB_CEBCA_001').read(sPath, {
                             filters: [oYearCombinedFilter],
                             success: (oData) => {
-                                this._drawCEBCAChart(this._transformCEBCAData(oData.results, aSelectedYearKeysStr), aSelectedYearKeysStr, 'idVizframeCEBCA');
+                                this._drawCEBCAChart(this._transformCEBCAData(oData.results, topYears), topYears, 'idVizframeCEBCA');
                             },
                             error: (oError) => {
                             }
@@ -295,9 +296,9 @@ sap.ui.define([
                             hideWhenOverlap: true,
                             renderer: function (oEvent) {
                                 if (oEvent.ctx.measureNames.includes(oResourceBundle.getText('proportion'))) {
-                                    oEvent.text = oEvent.val * 100 + '%';
+                                    oEvent.text = (oEvent.val * 100).toFixed(2) + '%';
                                 } else {
-                                    debugger
+                                    //debugger
                                     oEvent.text = oEvent.val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
                                 }
                             },
@@ -374,7 +375,7 @@ sap.ui.define([
                 const feedValueAxis = new sap.viz.ui5.controls.common.feeds.FeedItem({
                     uid: "valueAxis",
                     type: "Measure",
-                    values: ayears.map(year => year)
+                    values: ayears.map(year => year.toString())
 
                 }), feedValueAxis2 = new sap.viz.ui5.controls.common.feeds.FeedItem({
                     uid: "valueAxis2",
@@ -421,8 +422,8 @@ sap.ui.define([
                 result.push(...map.values());
                 result.sort((a, b) => Number(b[maxYear]) - Number(a[maxYear]));//20240929
                 return {
-                    result: result
-                };;
+                    result: result.slice(0, 4)
+                };
             },
 
             _fetchAndDrawCESATData: function (oCESATModel, sCurrentWeek, aSelectedYearKeysStr, idVizframe) {

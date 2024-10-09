@@ -221,7 +221,7 @@ sap.ui.define(
             const amount = parseFloat(amountStr);
             if (!isNaN(amount)) {
               // return sap.ui.core.format.NumberFormat.getCurrencyInstance().format(amount, currency);
-              return amount.toFixed(2);
+              return amount.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
             }
             return "0.00";
           });

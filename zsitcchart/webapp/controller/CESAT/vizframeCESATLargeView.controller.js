@@ -221,8 +221,8 @@ sap.ui.define(
               'applicationSet': 'fiori'
             }
           });
-          const oGridChart = this.byId("idGridChart");
-          oGridChart.addContent(oVizFrame);
+          //const oGridChart = this.byId("idGridChart");
+          //oGridChart.addContent(oVizFrame);
           this.oVizFrame = oVizFrame;
         }
 
