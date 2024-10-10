@@ -11,10 +11,11 @@ sap.ui.define(
     "sap/viz/ui5/controls/Popover",
     "sap/viz/ui5/data/MeasureDefinition",
     "sap/viz/ui5/data/DimensionDefinition",
-    "sap/viz/ui5/controls/VizSlider"
+    "sap/viz/ui5/controls/VizSlider",
+    "sap/ui/core/HTML"
   ],
   function (BaseController, Filter, FilterOperator, JSONModel, VizFrame, FlattenedDataset, FeedItem, History, Popover
-    , MeasureDefinition, DimensionDefinition, VizSlider
+    , MeasureDefinition, DimensionDefinition, VizSlider, HTMLControl
   ) {
     "use strict";
 
@@ -69,8 +70,8 @@ sap.ui.define(
           const sSelectYears = oArgs.years;
           const sSelectWeek = oArgs.week;
 
-          var aSelectedYearKeys = sSelectYears.match(/.{1,4}/g);
-          aSelectedYearKeys = aSelectedYearKeys.map(Number).sort((a, b) => b - a).slice(0, 2);
+          let aSelectedYearKeys = sSelectYears.match(/.{1,4}/g);
+          //aSelectedYearKeys = aSelectedYearKeys.map(Number).sort((a, b) => b - a).slice(0, 2);
           oYearSelect.setSelectedKeys(aSelectedYearKeys);
 
           // 2. 绑定周数据并过滤当前年份
@@ -158,7 +159,6 @@ sap.ui.define(
         };
       },
 
-
       onYearChangeFinish: function (oEvent) {
         const sSelectedYearKeys = oEvent.getSource().getSelectedKeys();
         const maxYear = Math.max(...sSelectedYearKeys.map(Number));
@@ -228,6 +228,13 @@ sap.ui.define(
         //必需要的不然轴的标签会不显示
         sap.viz.api.env.Format.numericFormatter(chartFormatter);
 
+        let firstCurrency, fourthCurrency;
+        if (this._bNavigationInProgress) {
+          firstCurrency = oData.result[0].waers || '';
+          fourthCurrency = oData.result[3].waers || oData.result[oData.result.length - 1].waers || '';
+          this._bNavigationInProgress = false;
+        }
+
         const oJsonModel = new JSONModel(oData);
         const oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
         let oVizFrame = this.byId('idVizframeCEBCA');
@@ -245,16 +252,19 @@ sap.ui.define(
           this.oVizFrame = oVizFrame;
         }
 
-        oVizFrame.attachBrowserEvent("click", function (oEvent) {
-          const sSelectYear = this.byId('idYearSelectCEBCA').getSelectedKeys().join('');
-          const sSelectWeek = this.byId('idWeekSelectCEBCA').getSelectedKey()
-          this.getOwnerComponent().getRouter().navTo('vizframeCEBCAOrg', { years: sSelectYear, week: sSelectWeek }, false);
-        }.bind(this))
-
+        //oVizFrame.attachBrowserEvent("click", function (oEvent) {
+        //  const sSelectYear = this.byId('idYearSelectCEBCA').getSelectedKeys().join('');
+        //  const sSelectWeek = this.byId('idWeekSelectCEBCA').getSelectedKey()
+        //  this.getOwnerComponent().getRouter().navTo('vizframeCEBCAOrg', { years: sSelectYear, week: sSelectWeek }, false);
+        //}.bind(this))
+        oVizFrame.zoom({ direction: "out" });
         oVizFrame.setVizProperties({
           interaction: {
             noninteractiveMode: false,
-            syncValueAxis: false
+            syncValueAxis: false,
+            selectability: {
+              mode: 'SINGLE'
+            }
           },
           scales: {
             valueAxis: {
@@ -266,12 +276,13 @@ sap.ui.define(
             primaryValuesColorPalette: ['#FF0000', '#007BFF', '#87ceeb', '#61a656'],
             secondaryValuesColorPalette: ['#FF0000', '#007BFF', '#87ceeb', '#61a656'],
             drawingEffect: 'glossy',
+            dataPointSize: 160,
             gap: {
               innerGroupSpacing: 0
             },
             dataLabel: {
               visible: true,
-              hideWhenOverlap: false,
+              hideWhenOverlap: true,
               renderer: function (oEvent) {
                 if (oEvent.ctx.measureNames.includes(oResourceBundle.getText('proportion'))) {
                   oEvent.text = (oEvent.val * 100).toFixed(2) + '%';
@@ -280,7 +291,7 @@ sap.ui.define(
                 }
               },
               style: {
-                fontSize: "8px", // 字体大小  
+                fontSize: "0.85rem", // 字体大小  
               }
             },
             dataShape: {
@@ -294,12 +305,27 @@ sap.ui.define(
                 fixedRange: true
             },  */
             window: {
-              //start: 'firstDataPoint',
-              //end: 'lastDataPoint'
+              start: {
+                categoryAxis: {
+                  [oResourceBundle.getText('currency')]: firstCurrency
+                }
+              },
+              end: {
+                categoryAxis: {
+                  [oResourceBundle.getText('currency')]: fourthCurrency
+                }
+              }
             }
           },
           title: {
             text: oResourceBundle.getText('titleofCEBCAchart')
+          },
+          categoryAxis: {
+            label: {
+              style: {
+                fontSize: "16px", // 字体大小  
+              }
+            }
           },
           valueAxis: {
             label: {
@@ -314,7 +340,10 @@ sap.ui.define(
           },
           valueAxis2: {
             label: {
-              formatString: FIORI_PERCENTAGE_FORMAT_2
+              formatString: FIORI_PERCENTAGE_FORMAT_2,
+              style: {
+                //  fontSize: '2rem'
+              }
             },
             title: {
               visible: false
@@ -334,8 +363,7 @@ sap.ui.define(
 
         const aMeasuresProp = ayears.map(year => new MeasureDefinition({
           name: `${year}${oResourceBundle.getText('proportion')}`,
-          value: `{viewModel>${year}prop}`,
-          unit: '%'
+          value: `{viewModel>${year}prop}`
         }));
 
         const oDataset = new FlattenedDataset({
@@ -375,6 +403,43 @@ sap.ui.define(
         oVizFrame.addFeed(feedValueAxis);
         oVizFrame.addFeed(feedValueAxis2);
         oVizFrame.addFeed(categoryAxis);
+        let index;
+        let oPopOver = new Popover({
+          customDataControl: function (oData) {
+
+            //%号和一般的数字都是通过一个逻辑来处理的，所以只能用html来模拟SAP的popover
+            let values = oData.data.val, divStr = "", sFormattedValue,
+              oEndWith = oData.data.val.some(item => {
+                return item.name.endsWith(oResourceBundle.getText('proportion'))
+              })
+            if (oEndWith) {
+              let oPercentage = sap.ui.core.format.NumberFormat.getPercentInstance({
+                style: 'precent',
+                maxFractionDigits: 2
+              });
+              sFormattedValue = oPercentage.format(values[2].value);
+              index = 2;
+            } else {
+              index = 1;
+              let oNumberFormat = sap.ui.core.format.NumberFormat.getFloatInstance({
+                groupingEnabled: true,   // 启用千分位
+                groupingSeparator: ",",  // 设置千分位分隔符为逗号
+                decimals: 0              // 设置小数点后的位数
+              });
+              sFormattedValue = oNumberFormat.format(values[1].value);
+            }
+
+            var svg = "<svg width='10px' height='10px'><path d='M-5,-5L5,-5L5,5L-5,5Z' fill='#5cbae6' transform='translate(5,5)'></path></svg>";
+            divStr = divStr + "<div style = 'margin: 15px 30px 0 10px'>" + svg + "<b style='margin-left:10px'>" + values[0].value + "</b></div>";
+            divStr = divStr + "<div style = 'margin: 5px 30px 15px 30px'>" + values[index].name + "<span style = 'float: right'>" + sFormattedValue + "</span></div>";
+            return new HTMLControl({ content: divStr });
+          }
+        });
+        oPopOver.connect(oVizFrame.getVizUid());
+
+        //let oTooltip = new VizTooltip({});
+        //oTooltip.setFormatString(FIORI_PERCENTAGE_FORMAT_2);
+        //oTooltip.connect(oVizFrame.getVizUid());
 
         const oVizSlider = this.byId('idVizSliderCEBCA');
         oVizSlider.destroyDataset();
@@ -436,6 +501,12 @@ sap.ui.define(
         } else {
           this.getOwnerComponent().getRouter().navTo("RouteView", {}, true /*no history*/);
         }
+      },
+
+      onNavCEBCAOrgView() {
+        const sSelectYear = this.byId('idYearSelectCEBCA').getSelectedKeys().join('');
+        const sSelectWeek = this.byId('idWeekSelectCEBCA').getSelectedKey()
+        this.getOwnerComponent().getRouter().navTo('vizframeCEBCAOrg', { years: sSelectYear, week: sSelectWeek }, false);
       },
 
       onBtnDownloadPDF: function () {

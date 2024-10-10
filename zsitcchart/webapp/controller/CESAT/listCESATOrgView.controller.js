@@ -172,7 +172,7 @@ sap.ui.define(
             filters: [oCombinedFilter],
             urlParameters: { "$top": "9999999" },
             success: (oData) => {
-              debugger
+              // debugger
               let aJsonResult = { 'company': this._convertOdataModelToJsonModel(oData, aSelectedYearKeys) };
               this.getView().setModel(new JSONModel(aJsonResult), 'viewCompanyModel');
               this._fillTable(aSelectedYearKeys);
@@ -194,9 +194,9 @@ sap.ui.define(
         oCompanyTable.destroyExtension();
         //oCompanyTable.destroyRows() 
 
-        const addColumn = (labelText, bindingPath, wrapping = true, formatter = null) => {
+        const addColumn = (labelText, bindingPath, width, wrapping = true, formatter = null) => {
           const oColumn = new Column({
-            width: 'auto',
+            width: width,
             label: new Label({
               text: oResourceBundle.getText(labelText)
             }),
@@ -212,12 +212,12 @@ sap.ui.define(
         };
 
         //addColumn('Org', ['org']);
-        addColumn('OrgName', ['Ddtext']);
-        addColumn('companyCode', ['bukrs']);
-        addColumn('companyCodeName', ['butxt'], false);
-        addColumn('currency', ['usdcurr'], false);
+        addColumn('OrgName', ['Ddtext'], '6rem');
+        addColumn('companyCode', ['bukrs'], '5rem');
+        addColumn('companyCodeName', ['butxt'], '27rem', false);
+        addColumn('currency', ['usdcurr'], '4rem', false);
         aSelectedYearKeys.forEach(year => {
-          addColumn(year, [year, 'usdcurr'], false, (amountStr, currency) => {
+          addColumn(year, [year, 'usdcurr'], '12rem', false, (amountStr, currency) => {
             const amount = parseFloat(amountStr);
             if (!isNaN(amount)) {
               // return sap.ui.core.format.NumberFormat.getCurrencyInstance().format(amount, currency);

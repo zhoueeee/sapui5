@@ -247,6 +247,13 @@
                     "target": [
                         "vizframeCEBCAOrgView"
                     ]
+                },
+                {
+                    "name": "vizframeCETCA",
+                    "pattern": "vizframeCETCA/{years}/{week}",
+                    "target": [
+                        "vizframeCETCAView"
+                    ]
                 }
             ],
             "targets": {
@@ -288,6 +295,14 @@
                     "clearControlAggregation": false,
                     "viewId": "idVizframeCEBCAOrgView",
                     "viewName": "vizframeCEBCAOrgView"
+                },
+                "vizframeCETCAView": {
+                    "viewType": "XML",
+                    "viewPath": "zdemowithpar.view.CETCA",
+                    "transition": "slide",
+                    "clearControlAggregation": false,
+                    "viewId": "idvizframeCETCAView",
+                    "viewName": "vizframeCETCAView"
                 }
             }
         },

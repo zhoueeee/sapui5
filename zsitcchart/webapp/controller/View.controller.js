@@ -121,18 +121,18 @@ sap.ui.define([
                     // 4. 使用 CESAT 模型加载图表数据
                     oCESATModel.metadataLoaded().then(() => {
                         const sPath = "/CESAT(p_ZWEEK='" + sCurrentWeek + "')/Set";
-                        var aYearFilters = aSelectedYearKeysStr.map(function (year) {
+                        let aYearFilters = aSelectedYearKeysStr.map(function (year) {
                             return new sap.ui.model.Filter("Zyear", sap.ui.model.FilterOperator.EQ, year);
                         });
                         // 创建组合 Filter，使用 AND: false（即 OR）
-                        var oYearCombinedFilter = new sap.ui.model.Filter({
+                        let oYearCombinedFilter = new sap.ui.model.Filter({
                             filters: aYearFilters,
                             and: false
                         });
                         oCESATModel.read(sPath, {
                             filters: [oYearCombinedFilter],
                             success: (oData) => {
-                                this._drawChart(this._transformData(oData.results, aSelectedYearKeysStr), aSelectedYearKeysStr, 'idVizframeCESAT'); // 绘制图表
+                                this._drawChart(this._transformData(oData.results, aSelectedYearKeysStr, 'ddtext'), aSelectedYearKeysStr, 'idVizframeCESAT'); // 绘制图表
                             },
                             error: (oError) => {
                             }
@@ -142,8 +142,8 @@ sap.ui.define([
                     //累计支出按币别分析表 
                     this.getOwnerComponent().getModel('ZSB_CEBCA_001').metadataLoaded().then(() => {
                         const sPath = "/yearcurrrate(p_ZWEEK='" + sCurrentWeek + "')/Set";
-                        var topYears = aSelectedYearKeysStr.map(Number).sort((a, b) => b - a).slice(0, 2);
-                        let aYearFilters = topYears.map(function (year) {
+                        //let topYears = aSelectedYearKeysStr.map(Number).sort((a, b) => b - a).slice(0, 2);
+                        let aYearFilters = aSelectedYearKeysStr.map(function (year) {
                             return new sap.ui.model.Filter("Zyear", sap.ui.model.FilterOperator.EQ, year);
                         });
                         // 创建组合 Filter，使用 AND: false（即 OR）
@@ -154,33 +154,56 @@ sap.ui.define([
                         this.getOwnerComponent().getModel('ZSB_CEBCA_001').read(sPath, {
                             filters: [oYearCombinedFilter],
                             success: (oData) => {
-                                this._drawCEBCAChart(this._transformCEBCAData(oData.results, topYears), topYears, 'idVizframeCEBCA');
+                                this._drawCEBCAChart(this._transformCEBCAData(oData.results, aSelectedYearKeysStr), aSelectedYearKeysStr, 'idVizframeCEBCA');
                             },
                             error: (oError) => {
                             }
                         });
                     });
+
+                    //累计支出按成本类型分析表CETCA
+                    this.getOwnerComponent().getModel('ZSB_CETCA_001').metadataLoaded().then(() => {
+                        const sPath = "/costType(p_ZWEEK='" + sCurrentWeek + "')/Set";
+                        let aYearFilters = aSelectedYearKeysStr.map(function (year) {
+                            return new sap.ui.model.Filter("Zyear", sap.ui.model.FilterOperator.EQ, year.toString());
+                        });
+                        // 创建组合 Filter，使用 AND: false（即 OR）
+                        var oYearCombinedFilter = new sap.ui.model.Filter({
+                            filters: aYearFilters,
+                            and: false
+                        });
+                        this.getOwnerComponent().getModel('ZSB_CETCA_001').read(sPath, {
+                            filters: [oYearCombinedFilter],
+                            success: (oData) => {
+                                this._drawCETCAChart(this._transformData(oData.results, aSelectedYearKeysStr, 'zcost_type'), aSelectedYearKeysStr, 'idVizframeCETCA');
+                            },
+                            error: (oError) => {
+                            }
+                        });
+                    }
+                    );
                 } catch (oError) {
 
                 }
 
             },
 
-            _transformData: function (odataResult, years) {
+            _transformData: function (odataResult, years, keyField) {
                 const resultMap = {};
                 const maxYear = Math.max(...years.map(Number)); //20240929
                 odataResult.forEach(item => {
-                    const { Zyear, ddtext, usdamount } = item;
+                    const { Zyear, usdamount } = item;
+                    const dynamicKey = item[keyField];
 
-                    if (!resultMap[ddtext]) {
-                        resultMap[ddtext] = { ddtext };
+                    if (!resultMap[dynamicKey]) {
+                        resultMap[dynamicKey] = { [keyField]: dynamicKey };
 
                         years.forEach(year => {
-                            resultMap[ddtext][year] = "0.00";
+                            resultMap[dynamicKey][year] = "0.00";
                         });
                     }
                     const amountDivided = (parseFloat(usdamount) / 10000).toFixed(0);
-                    resultMap[ddtext][Zyear] = amountDivided;
+                    resultMap[dynamicKey][Zyear] = amountDivided;
                 });
 
                 const transformedResult = Object.values(resultMap);
@@ -566,6 +589,122 @@ sap.ui.define([
                     uid: "categoryAxis",
                     type: "Dimension",
                     values: [oResourceBundle.getText('Org')]
+                });
+
+                return [feedValueAxis, feedCategoryAxis];
+            },
+
+            _drawCETCAChart(oData, ayears, idVizframe) {
+                const oJsonModel = new JSONModel(oData);
+                const oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
+                let oVizFrame = this.oVizFrames[idVizframe];
+                if (!oVizFrame) {
+                    oVizFrame = new VizFrame(idVizframe, {
+                        'width': '100%',
+                        'height': '280px',
+                        'uiConfig': {
+                            'applicationSet': 'fiori'
+                        }
+                    });
+                    const oGridChart = this.byId("idGridChart");
+                    oGridChart.addContent(oVizFrame);
+                    this.oVizFrames[idVizframe] = oVizFrame;
+
+                    oVizFrame.attachBrowserEvent("click", function (oEvent) {
+                        const sSelectYear = this.byId('idYearSelect').getSelectedKeys().join('');
+                        const sSelectWeek = this.byId('idWeekSelect').getSelectedKey()
+                        this.getOwnerComponent().getRouter().navTo('vizframeCETCA', { years: sSelectYear, week: sSelectWeek }, false);
+                    }.bind(this))
+                }
+
+                oVizFrame.setVizProperties({
+                    interaction: {
+                        noninteractiveMode: true  //禁止所有图形的交互操作
+                    },
+                    title: {
+                        text: oResourceBundle.getText('titleofCETCAchart')
+                    }
+                })
+
+                // 设置图表属性
+                oVizFrame.setModel(oJsonModel, 'viewModelCETCA');
+                oVizFrame.setVizProperties({
+                    interaction: {
+                        noninteractiveMode: true  // 禁止所有图形的交互操作
+                    },
+                    plotArea: {
+                        colorPalette: ['#FF0000', '#007BFF', '#87ceeb', '#61a656'],
+                        drawingEffect: 'glossy',
+                        dataLabel: {  //柱体字符
+                            visible: true,
+                            hideWhenOverlap: true,
+                            style: {
+                                fontSize: "8px", // 字体大小  
+                            },
+                            formatString: [['###,##0']]  //千分位逗号 //20240929
+                        }
+                    },
+                    categoryAxis: {
+                        label: {
+                            style: {
+                                fontSize: "8px", // 字体大小  
+                            }
+                        }
+                    },
+                    valueAxis: {
+                        label: {
+                            formatString: '###,##0' //20240929
+                        }
+                    }
+                });
+
+                // 调用创建数据集的函数
+                const oDataset = this._createDatasetCETCA(oResourceBundle, 'viewModelCETCA', ayears);
+
+                // 调用创建 feedItems 的函数
+                const aFeeds = this._createFeedItemsCETCA(oResourceBundle, ayears);
+
+                // 绑定数据集和类型到图表
+                oVizFrame.destroyDataset();
+                oVizFrame.setDataset(oDataset);
+                oVizFrame.setVizType('column');
+                var axis = new sap.viz.ui5.types.Axis().setScale(new sap.viz.ui5.types.Axis_scale().setMinValue(0).setMaxValue(1).setFixedRange(true));
+                // 清除之前的 feeds 并添加新的 feeds
+                oVizFrame.removeAllFeeds();
+                aFeeds.forEach(function (feedItem) {
+                    oVizFrame.addFeed(feedItem);
+                });
+            },
+
+            _createDatasetCETCA: function (oResourceBundle, modelName, aYears) {
+                const aMeasures = aYears.map(year => new MeasureDefinition({
+                    name: year,
+                    value: `{${modelName}>${year}}`
+                }));
+                return new FlattenedDataset({
+                    dimensions: [new DimensionDefinition({
+                        name: oResourceBundle.getText('costType'),
+                        value: `{${modelName}>zcost_type}`
+                    })],
+                    measures: aMeasures,
+                    data: {
+                        path: `${modelName}>/result`
+                    }
+                });
+            },
+
+            _createFeedItemsCETCA: function (oResourceBundle, aYears) {
+                const sortedYears = aYears.sort((a, b) => Number(b) - Number(a));
+                const feedValueAxis = new FeedItem({
+                    uid: "valueAxis",
+                    type: "Measure",
+                    values: sortedYears
+                });
+
+                const feedCategoryAxis = new FeedItem({
+                    uid: "categoryAxis",
+                    type: "Dimension",
+                    values: [oResourceBundle.getText('costType')]
                 });
 
                 return [feedValueAxis, feedCategoryAxis];

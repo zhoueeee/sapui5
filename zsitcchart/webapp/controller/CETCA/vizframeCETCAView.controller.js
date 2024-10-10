@@ -11,17 +11,17 @@ sap.ui.define(
     "sap/viz/ui5/controls/Popover",
     "sap/viz/ui5/data/MeasureDefinition",
     "sap/viz/ui5/data/DimensionDefinition",
-    "sap/viz/ui5/controls/VizSlider"
+    "sap/ui/core/HTML"
   ],
   function (BaseController, Filter, FilterOperator, JSONModel, VizFrame, FlattenedDataset, FeedItem, History, Popover
-    , MeasureDefinition, DimensionDefinition, VizSlider
+    , MeasureDefinition, DimensionDefinition, HTMLControl
   ) {
     "use strict";
 
-    return BaseController.extend("zdemowithpar.controller.CESAT.vizframeCESATLargeView", {
+    return BaseController.extend("zdemowithpar.controller.CETCA.vizframeCETCAView", {
       oVizFrame: null,
       onInit() {
-        this.getOwnerComponent().getRouter().getRoute("vizframeCESAT").attachMatched(this._onRouteMatched, this);
+        this.getOwnerComponent().getRouter().getRoute("vizframeCETCA").attachMatched(this._onRouteMatched, this);
       },
 
       _onRouteMatched(oEvent) {
@@ -33,9 +33,9 @@ sap.ui.define(
       loadData: async function (oEvent) {
         try {
           let oModel = this.getOwnerComponent().getModel();
-          const oCESATModel = this.getOwnerComponent().getModel('ZSB_CESAT_001');
-          let oYearSelect = this.byId('idYearSelect');
-          let oWeekSelect = this.byId("idWeekSelect");
+          const oCETCAModel = this.getOwnerComponent().getModel('ZSB_CETCA_001');
+          let oYearSelect = this.byId('idYearSelectCETCA');
+          let oWeekSelect = this.byId("idWeekSelectCETCA");
 
           // 1. 绑定年数据 
           oYearSelect.setModel(oModel);
@@ -101,9 +101,9 @@ sap.ui.define(
           // 3. 设置周的默认值
           oWeekSelect.setSelectedKey(sSelectWeek);
 
-          // 4. 使用 CESAT 模型加载图表数据
-          oCESATModel.metadataLoaded().then(() => {
-            const sPath = "/CESAT(p_ZWEEK='" + sSelectWeek + "')/Set";
+          // 4. 使用 CETCA 模型加载图表数据
+          oCETCAModel.metadataLoaded().then(() => {
+            const sPath = "/costType(p_ZWEEK='" + sSelectWeek + "')/Set";
             var aYearFilters = aSelectedYearKeys.map(function (year) {
               return new sap.ui.model.Filter("Zyear", sap.ui.model.FilterOperator.EQ, year);
             });
@@ -112,7 +112,7 @@ sap.ui.define(
               filters: aYearFilters,
               and: false
             });
-            oCESATModel.read(sPath, {
+            oCETCAModel.read(sPath, {
               filters: [oYearCombinedFilter],
               success: (oData) => {
                 this._drawChart(this._transformData(oData.results, aSelectedYearKeys), aSelectedYearKeys); // 绘制图表
@@ -131,17 +131,17 @@ sap.ui.define(
         const resultMap = {};
         const maxYear = Math.max(...years.map(Number)); //20240929
         odataResult.forEach(item => {
-          const { Zyear, ddtext, usdamount } = item;
+          const { Zyear, zcost_type, usdamount } = item;
 
-          if (!resultMap[ddtext]) {
-            resultMap[ddtext] = { ddtext };
+          if (!resultMap[zcost_type]) {
+            resultMap[zcost_type] = { zcost_type };
 
             years.forEach(year => {
-              resultMap[ddtext][year] = "0.00";
+              resultMap[zcost_type][year] = "0.00";
             });
           }
           const amountDivided = (parseFloat(usdamount) / 10000).toFixed(2);
-          resultMap[ddtext][Zyear] = amountDivided;
+          resultMap[zcost_type][Zyear] = amountDivided;
         });
 
         const transformedResult = Object.values(resultMap);
@@ -154,7 +154,7 @@ sap.ui.define(
       onYearChangeFinish: function (oEvent) {
         const sSelectedYearKeys = oEvent.getSource().getSelectedKeys();
         const maxYear = Math.max(...sSelectedYearKeys.map(Number));
-        const oWeekSelect = this.byId("idWeekSelect")
+        const oWeekSelect = this.byId("idWeekSelectCETCA")
         const oFilter = new Filter("Zyear", FilterOperator.EQ, maxYear);
         const oBinding = oWeekSelect.getBinding("items");
         oBinding.filter([oFilter]);
@@ -172,21 +172,21 @@ sap.ui.define(
             }
           }
 
-          const oDataModel = this.getOwnerComponent().getModel('ZSB_CESAT_001');
-          this._fetchAndDrawCESATData(oDataModel, sWeekSelect, sSelectedYearKeys);
+          const oDataModel = this.getOwnerComponent().getModel('ZSB_CETCA_001');
+          this._fetchAndDrawCETCAData(oDataModel, sWeekSelect, sSelectedYearKeys);
         })
 
       },
 
-      _fetchAndDrawCESATData: function (oCESATModel, sCurrentWeek, aSelectedYearKeysStr) {
+      _fetchAndDrawCETCAData: function (oCETCAModel, sCurrentWeek, aSelectedYearKeysStr) {
         return new Promise((resolve, reject) => {
           // 异步操作逻辑
-          oCESATModel.metadataLoaded().then(() => {
-            const sPath = "/CESAT(p_ZWEEK='" + sCurrentWeek + "')/Set";
+          oCETCAModel.metadataLoaded().then(() => {
+            const sPath = "/costType(p_ZWEEK='" + sCurrentWeek + "')/Set";
             const aYearFilters = aSelectedYearKeysStr.map(year => new sap.ui.model.Filter("Zyear", sap.ui.model.FilterOperator.EQ, year));
             const oYearCombinedFilter = new sap.ui.model.Filter({ filters: aYearFilters, and: false });
 
-            oCESATModel.read(sPath, {
+            oCETCAModel.read(sPath, {
               filters: [oYearCombinedFilter],
               success: (oData) => {
                 this._drawChart(this._transformData(oData.results, aSelectedYearKeysStr), aSelectedYearKeysStr);
@@ -202,9 +202,9 @@ sap.ui.define(
 
       onWeekChanged: function (oEvent) {
         const sWeekSelect = oEvent.getSource().getSelectedKey();
-        const sSelectedYearKeys = this.byId('idYearSelect').getSelectedKeys();
-        const oDataModel = this.getOwnerComponent().getModel('ZSB_CESAT_001');
-        this._fetchAndDrawCESATData(oDataModel, sWeekSelect, sSelectedYearKeys, 'idVizframeCESAT');
+        const sSelectedYearKeys = this.byId('idYearSelectCETCA').getSelectedKeys();
+        const oDataModel = this.getOwnerComponent().getModel('ZSB_CETCA_001');
+        this._fetchAndDrawCETCAData(oDataModel, sWeekSelect, sSelectedYearKeys, 'idVizframeCETCA');
       },
 
       _drawChart: function (oData, ayears) {
@@ -212,7 +212,7 @@ sap.ui.define(
         this._oData = oData;
         this._ayears = ayears;
         const oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
-        let oVizFrame = this.byId('idVizframeCESAT');
+        let oVizFrame = this.byId('idVizframeCETCA');
         if (!oVizFrame) {
           oVizFrame = new VizFrame(idVizframe, {
             'width': '100%',
@@ -231,16 +231,16 @@ sap.ui.define(
             noninteractiveMode: false
           },
           title: {
-            text: oResourceBundle.getText('titleofchart')
+            text: oResourceBundle.getText('titleofCETCAchart')
           }
         })
 
         // 设置图表属性
-        oVizFrame.setModel(oJsonModel, 'viewModel');
+        oVizFrame.setModel(oJsonModel, 'viewModelCETCALarge');
         oVizFrame.setVizProperties({
           interaction: {
             selectability: {
-              plotStdSelection: false
+              mode: 'SINGLE'
             }
           },
           plotArea: {
@@ -274,7 +274,7 @@ sap.ui.define(
         });
 
         // 调用创建数据集的函数
-        const oDataset = this._createDataset(oResourceBundle, 'viewModel', ayears);
+        const oDataset = this._createDataset(oResourceBundle, 'viewModelCETCALarge', ayears);
 
         // 调用创建 feedItems 的函数
         const aFeeds = this._createFeedItems(oResourceBundle, ayears);
@@ -290,21 +290,41 @@ sap.ui.define(
           oVizFrame.addFeed(feedItem);
         });
 
-        oVizFrame.attachSelectData((oEvent) => {
-          if (this._bNavigationInProgress) return;
-          this._bNavigationInProgress = true;
-          debugger
-          //通过这个语句可以取到model中的所在行
-          //oEvent.oSource.oModels.viewModel.oData.result[oEvent.getParameter("data")[0].data['_context_row_number']]  
-          const sOrg = oEvent.getParameter('data')[0].data[oResourceBundle.getText('Org')];
-          const sSelectYear = this.byId('idYearSelect').getSelectedKeys().join('');
-          const sSelectWeek = this.byId('idWeekSelect').getSelectedKey()
-          this.getOwnerComponent().getRouter().navTo('listCESATOrg', { years: sSelectYear, week: sSelectWeek, org: window.encodeURIComponent(sOrg) }, false);
+        //oVizFrame.attachSelectData((oEvent) => {
+        //if (this._bNavigationInProgress) return;
+        //this._bNavigationInProgress = true;
 
-        })
+        //通过这个语句可以取到model中的所在行
+        //oEvent.oSource.oModels.viewModel.oData.result[oEvent.getParameter("data")[0].data['_context_row_number']]  
+        //const sOrg = oEvent.getParameter('data')[0].data[oResourceBundle.getText('Org')];
+        //const sSelectYear = this.byId('idYearSelect').getSelectedKeys().join('');
+        //const sSelectWeek = this.byId('idWeekSelect').getSelectedKey()
+        //this.getOwnerComponent().getRouter().navTo('listcostTypeOrg', { years: sSelectYear, week: sSelectWeek, org: window.encodeURIComponent(sOrg) }, false);
+        //})
 
-        //const oPopOver = new Popover();
-        //oPopOver.connect(oVizFrame.getVizUid());
+        const oPopOver = new Popover({
+          customDataControl: function (oData) {
+
+            //%号和一般的数字都是通过一个逻辑来处理的，所以只能用html来模拟SAP的popover
+            let values = oData.data.val, divStr = "", sFormattedValue,
+
+
+              index = 1;
+            let oNumberFormat = sap.ui.core.format.NumberFormat.getFloatInstance({
+              groupingEnabled: true,   // 启用千分位
+              groupingSeparator: ",",  // 设置千分位分隔符为逗号
+              decimals: 0              // 设置小数点后的位数
+            });
+            sFormattedValue = oNumberFormat.format(values[1].value);
+
+
+            var svg = "<svg width='10px' height='10px'><path d='M-5,-5L5,-5L5,5L-5,5Z' fill='#5cbae6' transform='translate(5,5)'></path></svg>";
+            divStr = divStr + "<div style = 'margin: 15px 30px 0 10px'>" + svg + "<b style='margin-left:10px'>" + values[0].value + "</b></div>";
+            divStr = divStr + "<div style = 'margin: 5px 30px 15px 30px'>" + values[index].name + "<span style = 'float: right'>" + sFormattedValue + "</span></div>";
+            return new HTMLControl({ content: divStr });
+          }
+        });
+        oPopOver.connect(oVizFrame.getVizUid());
 
       },
       _createDataset: function (oResourceBundle, modelName, aYears) {
@@ -314,8 +334,8 @@ sap.ui.define(
         })));
         return new FlattenedDataset({
           dimensions: [new DimensionDefinition({
-            name: oResourceBundle.getText('Org'),
-            value: `{${modelName}>ddtext}`
+            name: oResourceBundle.getText('costType'),
+            value: `{${modelName}>zcost_type}`
           })],
           measures: aMeasures,
           data: {
@@ -335,7 +355,7 @@ sap.ui.define(
         const feedCategoryAxis = new FeedItem({
           uid: "categoryAxis",
           type: "Dimension",
-          values: [oResourceBundle.getText('Org')]
+          values: [oResourceBundle.getText('costType')]
         });
 
         return [feedValueAxis, feedCategoryAxis];
@@ -368,14 +388,14 @@ sap.ui.define(
 
         var ctrlString = "width=800px, height=600px"; // control page size
         var wind = window.open("", "Print", ctrlString);
-        var sContent = this.byId('idVizframeCESAT').exportToSVGString({
+        var sContent = this.byId('idVizframeCETCA').exportToSVGString({
           width: window.innerWidth,
           height: window.innerheight
         });
         wind.document.write(sContent);
         wind.print();
         /*
-        var oVizFrame = this.getView().byId("idVizframeCESAT");
+        var oVizFrame = this.getView().byId("idVizframeCETCA");
         oVizFrame.setVizProperties({
           interaction: {
             noninteractiveMode: true

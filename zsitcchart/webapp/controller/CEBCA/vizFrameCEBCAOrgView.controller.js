@@ -12,12 +12,13 @@ sap.ui.define(
     "sap/viz/ui5/data/MeasureDefinition",
     "sap/viz/ui5/data/DimensionDefinition",
     "sap/viz/ui5/controls/VizSlider",
-    "sap/viz/ui5/controls/Popover"
+    "sap/viz/ui5/controls/Popover",
+    "sap/ui/core/HTML"
   ],
   function (BaseController,
     History, Filter, FilterOperator, Item, JSONModel, VizFrame
     , FlattenedDataset, FeedItem, MeasureDefinition, DimensionDefinition,
-    VizSlider, Popover
+    VizSlider, Popover, HTMLControl
   ) {
     "use strict";
 
@@ -27,6 +28,7 @@ sap.ui.define(
       },
 
       _onRouteMatched(oEvent) {
+        this._bNavigationInProgress = true
         this.loadData(oEvent);
       },
 
@@ -67,8 +69,8 @@ sap.ui.define(
           const sSelectYears = oArgs.years;
           const sSelectWeek = oArgs.week;
 
-          var aSelectedYearKeys = sSelectYears.match(/.{1,4}/g);
-          aSelectedYearKeys = aSelectedYearKeys.map(Number).sort((a, b) => b - a).slice(0, 2);
+          let aSelectedYearKeys = sSelectYears.match(/.{1,4}/g);
+          //aSelectedYearKeys = aSelectedYearKeys.map(Number).sort((a, b) => b - a).slice(0, 2);
           oYearSelect.setSelectedKeys(aSelectedYearKeys);
 
           // 2. 绑定周数据并过滤当前年份
@@ -173,6 +175,13 @@ sap.ui.define(
         //必需要的不然轴的标签会不显示
         sap.viz.api.env.Format.numericFormatter(chartFormatter);
 
+        let firstCurrency, fourthCurrency;
+        if (this._bNavigationInProgress) {
+          firstCurrency = oData.result[0].waers || '';
+          fourthCurrency = oData.result[3].waers || oData.result[oData.result.length - 1].waers || '';
+          this._bNavigationInProgress = false;
+        }
+
         const oJsonModel = new JSONModel(oData);
         const oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
         let oVizFrame = this.byId('idVizframeCEBCAOrg');
@@ -222,7 +231,7 @@ sap.ui.define(
             },
             dataLabel: {
               visible: true,
-              hideWhenOverlap: false,
+              hideWhenOverlap: true,
               renderer: function (oEvent) {
                 if (oEvent.ctx.measureNames.includes(oResourceBundle.getText('proportion'))) {
                   oEvent.text = (oEvent.val * 100).toFixed(2) + '%';
@@ -231,7 +240,7 @@ sap.ui.define(
                 }
               },
               style: {
-                fontSize: "8px", // 字体大小  
+                fontSize: "0.85rem", // 字体大小  
               }
             },
             dataShape: {
@@ -245,8 +254,16 @@ sap.ui.define(
                 fixedRange: true
             },  */
             window: {
-              //start: 'firstDataPoint',
-              //end: 'lastDataPoint'
+              start: {
+                categoryAxis: {
+                  [oResourceBundle.getText('currency')]: firstCurrency
+                }
+              },
+              end: {
+                categoryAxis: {
+                  [oResourceBundle.getText('currency')]: fourthCurrency
+                }
+              }
             }
           },
           title: {
@@ -327,8 +344,38 @@ sap.ui.define(
         oVizFrame.addFeed(feedValueAxis2);
         oVizFrame.addFeed(categoryAxis);
 
+        let index;
         // Popover绑定
-        var oPopOver = new Popover();
+        let oPopOver = new Popover({
+          customDataControl: function (oData) {
+            //%号和一般的数字都是通过一个逻辑来处理的，所以只能用html来模拟SAP的popover
+            let values = oData.data.val, divStr = "", sFormattedValue,
+              oEndWith = oData.data.val.some(item => {
+                return item.name.endsWith(oResourceBundle.getText('proportion'))
+              })
+            if (oEndWith) {
+              let oPercentage = sap.ui.core.format.NumberFormat.getPercentInstance({
+                style: 'precent',
+                maxFractionDigits: 2
+              });
+              sFormattedValue = oPercentage.format(values[2].value);
+              index = 2;
+            } else {
+              index = 1;
+              let oNumberFormat = sap.ui.core.format.NumberFormat.getFloatInstance({
+                groupingEnabled: true,   // 启用千分位
+                groupingSeparator: ",",  // 设置千分位分隔符为逗号
+                decimals: 0              // 设置小数点后的位数
+              });
+              sFormattedValue = oNumberFormat.format(values[1].value);
+            }
+
+            var svg = "<svg width='10px' height='10px'><path d='M-5,-5L5,-5L5,5L-5,5Z' fill='#5cbae6' transform='translate(5,5)'></path></svg>";
+            divStr = divStr + "<div style = 'margin: 15px 30px 0 10px'>" + svg + "<b style='margin-left:10px'>" + values[0].value + "</b></div>";
+            divStr = divStr + "<div style = 'margin: 5px 30px 15px 30px'>" + values[index].name + "<span style = 'float: right'>" + sFormattedValue + "</span></div>";
+            return new HTMLControl({ content: divStr });
+          }
+        });
         oPopOver.connect(oVizFrame.getVizUid());
 
         const oVizSlider = this.byId('idVizSliderCEBCAOrg');
